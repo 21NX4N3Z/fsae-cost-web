@@ -1,0 +1,101 @@
+import type { DataSnapshot } from '../types'
+
+// First-run seed. Departments and cars include the ones you named plus room to add more.
+export function seedData(): DataSnapshot {
+  return {
+    cars: [
+      { id: 'BP18', name: 'BP18 (FSAE)', class: 'FSAE', year: 2026, status: 'active' },
+      { id: 'BAJA', name: 'BAJA SAE', class: 'BAJA', year: 2026, status: 'active' },
+    ],
+    departments: [
+      { id: 'PWT', name: 'Powertrain', leadEmail: '' },
+      { id: 'BDF', name: 'Body & Frame', leadEmail: '' },
+      { id: 'SUS', name: 'Suspension', leadEmail: '' },
+      { id: 'ELE', name: 'Electrical', leadEmail: '' },
+    ],
+    materials: [
+      { id: 'AL6061', name: 'Aluminum 6061-T6', unit: 'kg', rate: 6.5, source: 'Local supplier' },
+      { id: 'STEEL_4130', name: 'Chromoly 4130', unit: 'kg', rate: 9.0, source: 'Local supplier' },
+      { id: 'CF_PLATE', name: 'Carbon fiber plate', unit: 'm2', rate: 120, source: 'Online' },
+      { id: 'PLA', name: 'PLA filament', unit: 'kg', rate: 18, source: '3D store' },
+    ],
+    processes: [
+      {
+        id: 'CNC_MILL',
+        name: 'CNC Milling',
+        setupTime: 15,
+        runRate: 25,
+        laborRate: 8,
+        machineRate: 22,
+      },
+      {
+        id: 'CNC_TURN',
+        name: 'CNC Turning',
+        setupTime: 10,
+        runRate: 18,
+        laborRate: 8,
+        machineRate: 20,
+      },
+      {
+        id: 'WELD',
+        name: 'TIG Welding',
+        setupTime: 5,
+        runRate: 12,
+        laborRate: 12,
+        machineRate: 0,
+      },
+      {
+        id: 'PRINT_3D',
+        name: '3D Printing',
+        setupTime: 8,
+        runRate: 90,
+        laborRate: 4,
+        machineRate: 3,
+      },
+    ],
+    parts: [
+      {
+        id: 'BP18-CHASSIS',
+        parentId: null,
+        carId: 'BP18',
+        deptId: 'BDF',
+        name: 'Space Frame Chassis',
+        qtyPerCar: 1,
+        materialId: 'STEEL_4130',
+        mass: 28,
+        processId: 'WELD',
+        processQty: 40,
+        assemblyTime: 600,
+        status: 'draft',
+      },
+      {
+        id: 'BP18-UPRIGHT',
+        parentId: null,
+        carId: 'BP18',
+        deptId: 'SUS',
+        name: 'Upright (set of 4)',
+        qtyPerCar: 1,
+        materialId: 'AL6061',
+        mass: 3.2,
+        processId: 'CNC_MILL',
+        processQty: 4,
+        assemblyTime: 30,
+        status: 'draft',
+      },
+      {
+        id: 'BAJA-FRAME',
+        parentId: null,
+        carId: 'BAJA',
+        deptId: 'BDF',
+        name: 'BAJA Tubular Frame',
+        qtyPerCar: 1,
+        materialId: 'STEEL_4130',
+        mass: 35,
+        processId: 'WELD',
+        processQty: 55,
+        assemblyTime: 720,
+        status: 'draft',
+      },
+    ],
+  }
+}
