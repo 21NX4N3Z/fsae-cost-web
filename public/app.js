@@ -1390,8 +1390,18 @@ function requireToken() {
 function updateAuthUi(signedIn) {
   const btn = $("btnAuth");
   if (btn) btn.textContent = signedIn ? "Sign out" : "Sign in with Google";
-  const badge = $("authBadge");
-  if (badge) badge.textContent = signedIn ? "เชื่อม Sheet แล้ว" : "ยังไม่ได้เชื่อม";
+
+  // มี badge สองอัน — แถบบนกับในหน้า Settings ต้องตรงกันเสมอ
+  // เดิมอัปเดตแค่อันบน ทำให้ Settings ยังขึ้น 'ยังไม่ได้เชื่อม' ทั้งที่เชื่อมแล้ว
+  const b1 = $("authBadge");
+  if (b1) b1.textContent = signedIn ? "เชื่อม Sheet แล้ว" : "ยังไม่ได้เชื่อม";
+  $("authBadge2").textContent = signedIn ? "เชื่อมอยู่" : "ยังไม่ได้เชื่อม";
+  $("authBadge2").classList.toggle("pill-ok", signedIn);
+  $("authBadge2").classList.toggle("pill-idle", !signedIn);
+
+  // เชื่อมสำเร็จแล้ว error เก่าต้องหาย ไม่งั้นจะเห็นข้อความล้าสลับกับสถานะจริง
+  if (signedIn) clearAuthError();
+
   const who = $("authClient");
   if (who) {
     const cid = (state.settings.clientId || "");
@@ -2022,6 +2032,9 @@ function bindEvents() {
     try {
       const tabs = await listTabs();
       $("tabCount").textContent = tabs.length + " tabs";
+      // อ่านผ่าน = โทเคนใช้ได้จริง ไม่ว่าจะเชื่อมมาทาง popup หรือ redirect
+      if (!state.token) return;
+      clearAuthError();
       toast("อ่าน Sheet ได้ — " + tabs.length + " tabs");
     } catch (err) {
       toast("อ่านไม่สำเร็จ: " + err.message);
