@@ -1424,11 +1424,18 @@ async function sheetsGet(path, params) {
     throw new Error("โทเคนหมดอายุ — กด Sign in with Google อีกครั้ง");
   }
   if (!res.ok) throw new Error("Sheets API " + res.status + ": " + (await res.text()).slice(0, 180));
+  // ติดต่อ Sheet สำเร็จ = ทุกอย่างปกติ กล่อง error เก่าต้องหาย
+  clearAuthError();
   return res.json();
 }
 
 async function listTabs() {
   const info = await sheetsGet("", { includeGridData: "false" });
+  // อัปเดตช่อง Tabs found ทุกครั้งที่อ่านชีต ไม่ต้องกด Test connection
+  if (info.sheets && Array.isArray(info.sheets)) {
+    const box = $("tabCount");
+    if (box) box.value = info.sheets.length + " tabs";
+  }
   return (info.sheets || []).map((s) => s.properties);
 }
 
@@ -2031,7 +2038,7 @@ function bindEvents() {
     if (!state.token) { toast("กด Sign in with Google ก่อน"); return; }
     try {
       const tabs = await listTabs();
-      $("tabCount").textContent = tabs.length + " tabs";
+      $("tabCount").value = tabs.length + " tabs";
       // อ่านผ่าน = โทเคนใช้ได้จริง ไม่ว่าจะเชื่อมมาทาง popup หรือ redirect
       if (!state.token) return;
       clearAuthError();
