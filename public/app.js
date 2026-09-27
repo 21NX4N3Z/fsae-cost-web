@@ -1193,6 +1193,12 @@ async function initTokenClient() {
       state.token = resp.access_token;
       try { sessionStorage.setItem(STORAGE_KEYS.token, resp.access_token); } catch (e) { /* ignore */ }
       clearAuthError();
+      // เชื่อมผ่านแล้ว = client id ที่ใช้อยู่ใช้งานได้จริง ไม่ต้องเตือนอีก
+      if (state.settings.clientId !== GOOGLE_CLIENT_ID) {
+        state.workingClientId = state.settings.clientId;
+        try { localStorage.setItem("fsae.workingClientId", state.settings.clientId); } catch (e) { /* ignore */ }
+      }
+      $("clientIdWarn").hidden = true;
       updateAuthUi(true);
       toast("เชื่อม Google Sheets แล้ว");
     },
@@ -1250,6 +1256,12 @@ function updateAuthUi(signedIn) {
   if (btn) btn.textContent = signedIn ? "Sign out" : "Sign in with Google";
   const badge = $("authBadge");
   if (badge) badge.textContent = signedIn ? "เชื่อม Sheet แล้ว" : "ยังไม่ได้เชื่อม";
+  const who = $("authClient");
+  if (who) {
+    const cid = (state.settings.clientId || "");
+    who.textContent = cid ? cid.slice(0, 12) + "\u2026" + cid.slice(-6) : "";
+    who.title = cid;
+  }
 }
 
 async function sheetsGet(path, params) {
