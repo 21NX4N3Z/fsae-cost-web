@@ -139,14 +139,13 @@ def main():
     keep = {}
     for tn, (pn, name, asm, src) in want.items():
         if src and src in src_names.values():
-            # สร้างแท็บว่างแล้วเขียนค่าทีหลัง (สูตรจะยังอยู่)
-            ws = build_empty_sheet(wb, pn, name, asm)
-            keep[tn] = ws
-            order.append(tn)
+            # มีแท็บต้นทาง -> ห้ามเขียนแม่พิมพ์ทับ เพราะแม่พิมพ์วางหัวตารางที่แถว
+            # 11/16/21/26 ซึ่งเป็นแถวข้อมูล Details ของแท็บต้นทาง เอื้อกันสลับค่า
+            ws = wb.create_sheet(tn)
         else:
             ws = build_empty_sheet(wb, pn, name, asm)
-            keep[tn] = ws
-            order.append(tn)
+        keep[tn] = ws
+        order.append(tn)
 
     # 2) คัดลอกเนื้อหาจากแท็บต้นทางทับลงแท็บใหม่ (ค่า + สูตร)
     #    เขียนทับเฉพาะเซลล์ที่ต้นทางมีข้อมูล
