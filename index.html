@@ -117,6 +117,13 @@ p{margin:0;text-wrap:pretty}
 
 .page{padding:var(--s5) var(--s5) var(--s6)}
 .page[hidden]{display:none}
+.auth-error{margin:var(--s5) var(--s6) 0;padding:var(--s4);border:1px solid var(--danger-border);
+  border-left:4px solid var(--danger);border-radius:var(--radius);background:var(--danger-weak);
+  display:grid;gap:var(--s2)}
+.auth-error strong{color:var(--danger);font-size:.95rem}
+.auth-error span{font-size:.875rem;color:var(--text)}
+.auth-error ul{margin:0;padding-inline-start:1.25rem;font-size:.8125rem;color:var(--text-muted);display:grid;gap:2px}
+.pill.is-error{background:var(--danger-weak);color:var(--danger);border-color:var(--danger-border)}
 
 .page-head{
   display:flex;justify-content:space-between;align-items:flex-start;
@@ -546,6 +553,17 @@ p{margin:0;text-wrap:pretty}
         </button>
       </div>
     </header>
+
+    <!-- กล่องบอกสาเหตุที่ล็อกอินไม่สำเร็จ -->
+    <div class="auth-error" id="authError" role="alert" hidden>
+      <strong>เชื่อม Google Sheets ไม่สำเร็จ</strong>
+      <span id="authErrorMsg"></span>
+      <ul>
+        <li>ต้องเพิ่ม URL ของเว็บนี้ใน <b>Authorized JavaScript origins</b> ของ OAuth client</li>
+        <li>ถ้าบัญชีอยู่ในโหมด Testing ต้องเพิ่มอีเมลเป็น <b>Test user</b> ที่หน้า OAuth consent screen</li>
+        <li>ต้องเลือกบัญชีที่มีสิทธิ์แก้ไขชีตนี้</li>
+      </ul>
+    </div>
 
     <!-- ---------- Cost Entry ---------- -->
     <section class="page" id="page-entry" aria-labelledby="entryTitle">

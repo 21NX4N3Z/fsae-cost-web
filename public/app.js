@@ -1184,15 +1184,60 @@ async function initTokenClient() {
   tokenClient = g.accounts.oauth2.initTokenClient({
     client_id: state.settings.clientId,
     scope: "https://www.googleapis.com/auth/spreadsheets",
+    include_granted_scopes: true,
     callback: (resp) => {
-      if (resp.error) { toast("ล็อกอินไม่สำเร็จ: " + resp.error); return; }
+      if (resp.error) {
+        showAuthError(resp.error, resp.error_description || "");
+        return;
+      }
       state.token = resp.access_token;
       try { sessionStorage.setItem(STORAGE_KEYS.token, resp.access_token); } catch (e) { /* ignore */ }
+      clearAuthError();
       updateAuthUi(true);
       toast("เชื่อม Google Sheets แล้ว");
     },
+    error_callback: (err) => {
+      // GIS ส่ง error ที่เกิดระหว่างเปิด popup มาทางนี้
+      // ถ้าไม่มี callback นี้ error จะหายเงียบไป
+      showAuthError(err.type || "unknown", err.message || String(err));
+    },
   });
   return tokenClient;
+}
+
+/** แสดงสาเหตุที่ล็อกอินไม่สำเร็จให้ชัด เพราะ error ของ Google มักกำกวม */
+const AUTH_HINTS = {
+  origin_mismatch: "Origin ไม่ตรง — ต้องเพิ่ม URL ของเว็บนี้ใน Authorized JavaScript origins",
+  access_denied: "ถูกปฏิเสธสิทธิ์ หรือบัญชีนี้ไม่ได้อยู่ในรายชื่อ Test user ของ OAuth client",
+  "popup_closed_by_user": "ปิดหน้าต่างล็อกอินก่อนเสร็จ",
+  consent_redirect: "ต้องยืนยันสิทธิ์ที่หน้าจอ Google — กดยอมรับแล้วกลับมากดอีกครั้ง",
+  network_error: "ต่อ Google ไม่ได้ — ตรวจอินเทอร์เน็ต",
+  invalid_client: "Client ID ไม่ถูกต้อง หรือยังไม่ได้เพิ่ม Authorized JavaScript origins",
+  403: "สิทธิ์ไม่พอ — ถ้าบัญชีอยู่ในโหมด Testing ต้องเพิ่มอีเมลเป็น Test user ก่อน",
+};
+
+function showAuthError(code, detail) {
+  const hint = AUTH_HINTS[code] || AUTH_HINTS[String(detail).slice(0, 3)] || "";
+  const msg = "ล็อกอินไม่สำเร็จ [" + code + "]" + (hint ? " — " + hint : "");
+  toast(msg);
+  const badge = $("authBadge");
+  if (badge) {
+    badge.textContent = "ล็อกอินไม่สำเร็จ: " + code;
+    badge.classList.add("is-error");
+  }
+  const panel = $("authError");
+  if (panel) {
+    panel.hidden = false;
+    $("authErrorMsg").textContent = msg + (detail ? " (" + detail + ")" : "");
+  }
+  console.warn("[auth]", code, detail);
+}
+
+function clearAuthError() {
+  const panel = $("authError");
+  if (panel) panel.hidden = true;
+  const badge = $("authBadge");
+  if (badge) badge.classList.remove("is-error");
 }
 
 function requireToken() {
@@ -1211,6 +1256,15 @@ async function sheetsGet(path, params) {
   const base = "https://sheets.googleapis.com/v4/spreadsheets/" + state.settings.spreadsheetId;
   const qs = params ? "?" + new URLSearchParams(params).toString() : "";
   const res = await fetch(base + path + qs, { headers: { Authorization: "Bearer " + state.token } });
+  if (res.status === 401 || res.status === 403) {
+    // token หมดอายุหรือไม่มีสิทธิ์ — ล้างทิ้งให้ผู้ใช้ล็อกอินใหม่
+    state.token = null;
+    tokenClient = null;
+    try { sessionStorage.removeItem(STORAGE_KEYS.token); } catch (e) { /* ignore */ }
+    updateAuthUi(false);
+    showAuthError(String(res.status), "โทเคนหมดอายุหรือไม่มีสิทธิ์เขียนชีตนี้");
+    throw new Error("โทเคนหมดอายุ — กด Sign in with Google อีกครั้ง");
+  }
   if (!res.ok) throw new Error("Sheets API " + res.status + ": " + (await res.text()).slice(0, 180));
   return res.json();
 }
@@ -1787,8 +1841,9 @@ function bindEvents() {
       showPage("settings");
       return;
     }
+    clearAuthError();
     try { (await initTokenClient()).requestAccessToken(); }
-    catch (err) { toast("ล็อกอินไม่สำเร็จ: " + err.message); }
+    catch (err) { showAuthError(err.type || "popup", err.message || String(err)); }
   });
 
   $("btnSaveSettings").addEventListener("click", () => {
