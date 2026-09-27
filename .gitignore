@@ -23,3 +23,6 @@ _old/
 *.orig
 *.backup
 app_js_*.js
+
+test-results/
+playwright-report/

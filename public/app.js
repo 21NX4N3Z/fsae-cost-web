@@ -79,6 +79,8 @@ const state = {
   modal: { catalog: "materials", target: "material" },
   token: null,
   conflict: null,
+  missing: null,   // { pn: {costed, sheetName} } จากการสแกนชีต
+  scanBusy: false,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -152,6 +154,8 @@ function evaluateFormula(formula, values, c1, c2) {
  * ถ้าขนาดเล็กกว่าค่าตัดออกสูตรจะได้ลบ ซึ่งเป็นต้นทุนที่ไม่มีความหมาย */
 function unitCostOf(row) {
   if (row.kind === "tooling") return Math.max(num(row.toolCost, 0), 0);
+  // ไม่พบในแคตตาล็อก (คนในทีมพิมพ์เอง) — ใช้ค่าที่ชีตคำนวณไว้แทน
+  if (row.notInCatalog) return Math.max(num(row.sheetUnitCost, 0), 0);
   return Math.max(evaluateFormula(row.formula, row.values, row.c1, row.c2), 0);
 }
 
@@ -249,7 +253,9 @@ function syncPart() {
   state.partNo = found[0];
   $("selPart").value = found[0];
   $("inpPartName").value = found[1];
-  $("inpBaseNo").value = (found[0].match(/\d{4,5}-\d+/) || [""])[0];
+  // BOM ใช้ 'FR 00230-AA' แต่ชีตใช้ base รูป '30001-1'
+  // จึงเก็บ P/N ดิบไว้ แล้วให้ผู้ใช้กำหนด tab เองได้ในช่อง Target tab
+  $("inpBaseNo").value = found[0];
   const tag = $("partCategory");
   tag.textContent = found[2];
   tag.className = "tag " + (found[2] === "BODY" ? "tag-body" : "tag-frame");
@@ -363,6 +369,10 @@ function buildRow(section, row, index) {
     ? "I × Quantity ÷ PVF"
     : ((row.params && row.params.length > 0) ? row.formula : "fixed catalog price");
   nameBox.appendChild(el("div", "cr-formula", hint));
+  if (row.notInCatalog) {
+    const badge = el("span", "tag tag-wait", "ไม่รู้จักในแคตตาล็อก — ใช้ค่าจากชีต");
+    nameBox.appendChild(badge);
+  }
   top.appendChild(nameBox);
 
   const totalBox = el("div");
@@ -676,6 +686,133 @@ function renderCatalogPage() {
 }
 
 // ------------------------------------------------------------
+// Missing Cost — สถานะจริงจากชีต
+// ------------------------------------------------------------
+
+/** ชื่อ tab ที่ Sheet ใช้ สำหรับ part หนึ่งชิ้น */
+function sheetTabNameForPart(pn) {
+  return ("AA " + pn).trim();
+}
+
+/** เช็คว่า tab ของ part มีต้นทุนจริงหรือยัง (อ่านค่า I ของแถวแรกที่มีชื่อ) */
+async function tabHasCost(tabName) {
+  const { rows, layout } = await readTab(tabName);
+  const L = layout.material || layout.process;
+  if (!L) return { exists: true, costed: false, rows: 0 };
+  let count = 0;
+  SECTIONS.forEach((s) => {
+    const lay = layout[s.key];
+    if (!lay) return;
+    for (let r = lay.dataStart; r <= lay.dataEnd; r += 1) {
+      if (cell(rows, r, "C").trim()) count += 1;
+    }
+  });
+  return { exists: true, costed: count > 0, rows: count };
+}
+
+async function scanSheetForMissing() {
+  if (!requireToken()) return;
+  if (state.scanBusy) return;
+  state.scanBusy = true;
+  const btn = $("btnScanSheet");
+  if (btn) btn.disabled = true;
+  $("missingSummary").textContent = "กำลังสแกน...";
+
+  try {
+    const tabs = await listTabs();
+    const names = new Set(tabs.map((t) => t.title.trim()));
+    const out = {};
+
+    // รวม P/N ทั้งหมดจาก BOM
+    const wanted = [];
+    Object.keys(state.bom).forEach((assembly) => {
+      partsOf(assembly).forEach((r) => wanted.push({ assembly, pn: r[0], name: r[1] }));
+    });
+
+    for (let i = 0; i < wanted.length; i += 1) {
+      const w = wanted[i];
+      const tab = sheetTabNameForPart(w.pn);
+      if (!names.has(tab)) { out[w.pn] = { tab, status: "no-tab" }; continue; }
+      try {
+        const res = await tabHasCost(tab);
+        out[w.pn] = { tab, status: res.costed ? "costed" : "empty", rows: res.rows };
+      } catch (err) {
+        out[w.pn] = { tab, status: "error", message: err.message };
+      }
+      if (i % 5 === 4) $("missingSummary").textContent = "กำลังสแกน " + (i + 1) + "/" + wanted.length;
+    }
+
+    state.missing = out;
+    renderMissing();
+    const missingCount = Object.values(out).filter((x) => x.status !== "costed").length;
+    $("missingSummary").textContent = "สแกนแล้ว " + wanted.length + " parts — ขาดต้นทุน " + missingCount;
+  } catch (err) {
+    $("missingSummary").textContent = "สแกนไม่สำเร็จ: " + err.message;
+    toast("สแกนไม่สำเร็จ: " + err.message);
+  } finally {
+    state.scanBusy = false;
+    if (btn) btn.disabled = false;
+  }
+}
+
+function renderMissing() {
+  const body = $("missingRows");
+  if (!body) return;
+  body.textContent = "";
+  const q = ($("inpMissingSearch") ? $("inpMissingSearch").value : "").trim().toLowerCase();
+
+  const rows = [];
+  Object.keys(state.bom).forEach((assembly) => {
+    partsOf(assembly).forEach((r) => {
+      const info = state.missing ? state.missing[r[0]] : null;
+      const local = state.savedEntries.some((e) => e.pn === r[0]);
+      let status = local ? "local" : (info ? info.status : "unknown");
+      if (status === "costed") status = "costed";
+      if (status === "local" || status === "costed") return;   // มีต้นทุนแล้ว ไม่นับ
+      if (q && !(r[0] + " " + r[1]).toLowerCase().includes(q)) return;
+      rows.push({ assembly, pn: r[0], name: r[1], status });
+    });
+  });
+
+  $("missingCount").textContent = state.missing
+    ? rows.length + " รายการยังไม่มีต้นทุน" : "กด Scan เพื่อตรวจจากชีต";
+
+  if (rows.length === 0) {
+    const tr = el("tr");
+    const td = el("td", "empty", state.missing ? "ทุก part มีต้นทุนแล้ว" : "ยังไม่ได้สแกน — กด Scan Google Sheets");
+    td.colSpan = 5;
+    tr.appendChild(td);
+    body.appendChild(tr);
+    return;
+  }
+
+  const label = { "no-tab": "ยังไม่มี tab", empty: "tab ว่าง", error: "อ่านไม่ได้", unknown: "ยังไม่รู้" };
+  rows.forEach((r) => {
+    const tr = el("tr");
+    tr.appendChild(el("td", null, r.assembly));
+    tr.appendChild(el("td", "mono", r.pn));
+    tr.appendChild(el("td", null, r.name));
+    const st = el("td");
+    st.appendChild(el("span", "tag tag-wait", label[r.status] || r.status));
+    tr.appendChild(st);
+    const act = el("td");
+    const btn = el("button", "btn btn-sm", "Use in Cost Entry");
+    btn.type = "button";
+    btn.addEventListener("click", () => {
+      state.assembly = r.assembly;
+      $("selAssembly").value = r.assembly;
+      fillParts();
+      showPage("entry");
+      $("selPart").value = r.pn;
+      syncPart();
+    });
+    act.appendChild(btn);
+    tr.appendChild(act);
+    body.appendChild(tr);
+  });
+}
+
+// ------------------------------------------------------------
 // Dashboard
 // ------------------------------------------------------------
 function renderDashboard() {
@@ -730,6 +867,7 @@ function currentEntry() {
     partName: $("inpPartName").value,
     baseNo: $("inpBaseNo").value,
     suffix: $("inpSuffix").value || "AA",
+    targetTab: $("inpTargetTab") ? $("inpTargetTab").value.trim() : "",
     system: $("selSystem") ? $("selSystem").value : "Body&Frame",
     makeBuy: $("selMakeBuy").value,
     details: $("inpDetails").value,
@@ -846,6 +984,7 @@ function showPage(name) {
     else b.removeAttribute("aria-current");
   });
   if (name === "bom") { renderAssemblyList(); renderBom(); }
+  if (name === "missing") renderMissing();
   if (name === "catalogs") renderCatalogPage();
   if (name === "dashboard") renderDashboard();
   if (name === "settings") applySettingsToForm();
@@ -1039,10 +1178,48 @@ function buildUpdates(entry, layout) {
   return updates;
 }
 
+/** ชื่อ tab ที่ "ตั้งใจจะใช้" — เอารูปแบบ AA <base>-<suffix> */
 function tabNameFor(entry) {
   const base = (entry.baseNo || entry.pn).trim();
   const suffix = (entry.suffix || "AA").trim();
   return ("AA " + base + (suffix ? "-" + suffix : "")).trim();
+}
+
+/**
+ * หา tab ที่ตรงกับ part จริง โดยไม่เดาจากรูปแบบ
+ * BOM กับชีตใช้ระบบเลขคนละแบบ (BOM = 'FR 00230-AA', ชีต = 'AA 30001-1')
+ * จึงต้องลองหลายแบบและเทียบกับรายชื่อ tab ที่มีจริง
+ */
+function tabCandidates(entry) {
+  const pn = (entry.pn || "").trim();
+  const base = (entry.baseNo || "").trim();
+  const suffix = (entry.suffix || "AA").trim();
+  const nums = pn.match(/\d+/g) || [];
+  const baseNums = base.match(/\d+/g) || [];
+
+  const list = [];
+  // 1) ผู้ใช้กำหนดเอง
+  if (entry.targetTab) list.push(entry.targetTab);
+  // 2) รูปแบบมาตรฐานของชีต
+  if (base) list.push("AA " + base + (suffix ? "-" + suffix : ""));
+  // 3) เอาเลขใน P/N มาประกอบเอง
+  if (baseNums.length) list.push("AA " + baseNums.join(""));
+  if (nums.length >= 2) list.push("AA " + nums[0] + "-" + nums[1]);
+  else if (nums.length === 1) list.push("AA " + nums[0] + "-" + suffix);
+  // 4) ใช้ P/N ตรง ๆ
+  list.push(pn);
+
+  return [...new Set(list.filter((x) => x && x.trim() && x.trim() !== "AA"))];
+}
+
+async function resolveTab(entry, tabs) {
+  const names = tabs.map((t) => t.title);
+  const trimmed = names.map((n) => n.trim());
+  for (const cand of tabCandidates(entry)) {
+    const i = trimmed.indexOf(cand.trim());
+    if (i >= 0) return { tab: names[i], exact: cand.trim() === cand || true };
+  }
+  return null;
 }
 
 async function sheetsBatchUpdate(body) {
@@ -1059,10 +1236,13 @@ async function sheetsBatchUpdate(body) {
 }
 
 async function ensureTab(entry) {
-  const wanted = tabNameFor(entry);
   const tabs = await listTabs();
-  const found = tabs.find((t) => t.title.trim() === wanted);
-  if (found) return found.title;
+  const hit = await resolveTab(entry, tabs);
+  if (hit) return hit.tab;
+
+  // ไม่เจอ — สร้างใหม่จากเทมเพลต โดยใช้ชื่อที่ผู้ใช้กำหนด หรือรูปแบบมาตรฐาน
+  const wanted = (entry.targetTab || tabNameFor(entry)).trim();
+  if (tabs.some((t) => t.title.trim() === wanted)) return wanted;
 
   const tpl = state.settings.templateTab.trim();
   const tplSheet = tabs.find((t) => t.title.trim() === tpl);
@@ -1080,6 +1260,43 @@ async function ensureTab(entry) {
   return wanted;
 }
 
+/**
+ * เพิ่มแถวให้หมวดที่ยังไม่พอ โดยแทรกก่อนแถว Sub Total
+ * Google Sheets จะขยับสูตรของทีมให้เองเมื่อ insertRows
+ * @returns {Object} layout ใหม่หลังแทรก
+ */
+async function expandSection(tabName, section, need, layout) {
+  const L = layout[section.key];
+  if (!L || need <= L.capacity) return L;
+
+  const add = need - L.capacity;
+  // แทรกก่อนแถว Sub Total เพื่อไม่ให้สูตรรวมและ V1 ขยับผิดที่
+  const startIndex = L.subtotalRow - 1;
+  await sheetsBatchUpdate({
+    requests: [{
+      insertDimension: {
+        range: { sheetId: await sheetIdOf(tabName), dimension: "ROWS", startIndex, endIndex: startIndex + add },
+        inheritFromBefore: false,
+      },
+    }],
+  });
+
+  // อ่านใหม่เพื่อดึง layout ที่ขยับแล้ว
+  const fresh = await readTab(tabName);
+  return fresh.layout[section.key];
+}
+
+const sheetIdCache = {};
+
+async function sheetIdOf(tabName) {
+  if (sheetIdCache[tabName]) return sheetIdCache[tabName];
+  const tabs = await listTabs();
+  const hit = tabs.find((t) => t.title.trim() === tabName.trim());
+  if (!hit) throw new Error("ไม่พบ tab '" + tabName + "'");
+  sheetIdCache[tabName] = hit.sheetId;
+  return hit.sheetId;
+}
+
 async function syncPush() {
   if (!requireToken()) return;
   if (!state.settings.clientId) { toast("กรอก OAuth Client ID ใน Settings ก่อน"); return; }
@@ -1093,17 +1310,26 @@ async function syncPush() {
       toast("สร้าง tab ใหม่ไม่สำเร็จ — ตรวจว่ามี tab เทมเพลต '" + state.settings.templateTab + "'");
       return;
     }
-    const { layout } = await readTab(tab);
+    let { layout } = await readTab(tab);
     const missing = SECTIONS.filter((s) => !layout[s.key]);
     if (missing.length > 0) {
       toast("tab '" + tab + "' ไม่มีหัวข้อหมวด: " + missing.map((s) => s.label).join(", "));
       return;
     }
-    const over = SECTIONS.filter((s) => (entry.rows[s.key] || []).length > layout[s.key].capacity);
-    if (over.length > 0) {
-      toast("แถวไม่พอใน " + over.map((s) => s.label).join(", ") +
-            " (รองรับเท่าที่ชีตมี) — เพิ่มแถวในชีตก่อนแล้ว Sync ใหม่");
-      return;
+
+    // เพิ่มแถวอัตโนมัติถ้าไม่พอ — ตามที่ผู้ใช้สั่ง
+    let expanded = 0;
+    for (const section of SECTIONS) {
+      const need = (entry.rows[section.key] || []).length;
+      if (need > layout[section.key].capacity) {
+        layout[section.key] = await expandSection(tab, section, need, layout);
+        expanded += 1;
+      }
+    }
+    if (expanded > 0) {
+      const fresh = await readTab(tab);
+      layout = fresh.layout;
+      toast("เพิ่มแถวให้อัตโนมัติ " + expanded + " หมวด");
     }
 
     const requests = buildUpdates(entry, layout).map((u) => ({
@@ -1149,8 +1375,9 @@ async function syncPull() {
         return;
       }
     }
-    loadFromSheet(rows, layout, currentEntry());
-    toast("โหลดข้อมูลจาก tab '" + tab + "' แล้ว");
+    const res = loadFromSheet(rows, layout, currentEntry());
+    toast("โหลดจาก '" + tab + "' แล้ว — ผูกแคตตาล็อกได้ " + res.matched + " รายการ" +
+      (res.unmatched.length ? " · ไม่รู้จัก " + res.unmatched.length + " รายการ" : ""));
   } catch (err) {
     toast("Pull ไม่สำเร็จ: " + err.message);
   } finally {
@@ -1158,7 +1385,24 @@ async function syncPull() {
   }
 }
 
+/** หาแคตตาล็อกที่ตรงกับชื่อที่อ่านมาจากชีต
+ * คนในทีมอาจพิมพ์ชื่อย่อไว้เอง (เช่น 'Laser Cut' vs 'Laser Cutting')
+ * จึงต้องเทียบแบบไม่สนตัวพิมพ์และไม่สนเครื่องหมาย */
+function findCatalogItem(catalogKey, title) {
+  const list = state.catalog[catalogKey] || [];
+  if (!title) return null;
+  const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const target = norm(title);
+  return list.find((i) => norm(i.title) === target)
+      || list.find((i) => norm(i.title).startsWith(target))
+      || list.find((i) => target.startsWith(norm(i.title)))
+      || null;
+}
+
 function loadFromSheet(rows, layout, entry) {
+  let matched = 0;
+  let unmatched = [];
+
   SECTIONS.forEach((section) => {
     const L = layout[section.key];
     const out = [];
@@ -1166,17 +1410,31 @@ function loadFromSheet(rows, layout, entry) {
       for (let r = L.dataStart; r <= L.dataEnd; r += 1) {
         const title = cell(rows, r, "C").trim();
         if (!title) continue;
+
+        // ผูกกลับเข้ากับแคตตาล็อก เพื่อให้แก้ขนาดแล้วคำนวณต่อได้
+        const hit = findCatalogItem(section.catalog, title);
+        if (hit) matched += 1; else unmatched.push(title);
+
         const row = {
           kind: section.key,
           title: title,
           use: cell(rows, r, "G").trim(),
           unit: cell(rows, r, "M").trim(),
+          formula: hit ? hit.formula : "",
+          c1: hit ? hit.c1 : 0,
+          c2: hit ? hit.c2 : 0,
+          params: hit ? (hit.params || []) : [],
+          values: {},
+          // เผื่อไม่เจอในแคตตาล็อก — ใช้ค่าที่ชีตคำนวณไว้แทน
           sheetUnitCost: num(cell(rows, r, "I"), 0),
-          formula: "",
-          c1: 0, c2: 0, params: [], values: {},
+          notInCatalog: !hit,
         };
+        (hit ? (hit.params || []) : []).forEach((p) => { row.values[p.name] = 0; });
+
         if (section.key === "material") {
           row.size1 = num(cell(rows, r, "K"), 0);
+          row.size1Fixed = row.params.some((p) => p.name === "Size1");
+          if (row.size1Fixed) row.values.Size1 = row.size1;
           row.size2 = num(cell(rows, r, "O"), 0);
           row.areaName = cell(rows, r, "S").trim();
           row.area = num(cell(rows, r, "U"), 0);
@@ -1202,12 +1460,15 @@ function loadFromSheet(rows, layout, entry) {
     }
     state.rows[section.key] = out;
   });
+
   $("inpPartName").value = cell(rows, 4, "C") || entry.partName;
   $("inpBaseNo").value = cell(rows, 5, "C") || entry.baseNo;
   $("inpSuffix").value = cell(rows, 6, "C") || entry.suffix;
   $("inpDetails").value = cell(rows, 7, "C") || "";
   $("inpQty").value = num(cell(rows, 2, "V"), 1) || 1;
   renderCost();
+
+  return { matched, unmatched };
 }
 
 function showConflict(tab, local, remote) {
@@ -1295,14 +1556,17 @@ function bindEvents() {
     try {
       const tab = state.conflict.tab;
       const { rows, layout } = await readTab(tab);
-      loadFromSheet(rows, layout, currentEntry());
-      toast("ใช้ข้อมูลจาก Sheet แล้ว");
+      const res = loadFromSheet(rows, layout, currentEntry());
+      toast("ใช้ข้อมูลจาก Sheet แล้ว — ผูกแคตตาล็อกได้ " + res.matched +
+        (res.unmatched.length ? " · ไม่รู้จัก: " + res.unmatched.join(", ") : ""));
     } catch (err) {
       toast("โหลดไม่สำเร็จ: " + err.message);
     }
   });
 
   $("inpBomSearch").addEventListener("input", renderBom);
+  $("btnScanSheet").addEventListener("click", scanSheetForMissing);
+  $("inpMissingSearch").addEventListener("input", renderMissing);
   $("btnBomClear").addEventListener("click", () => { $("inpBomSearch").value = ""; renderBom(); });
 
   $("inpCatalogSearch").addEventListener("input", renderCatalogList);
