@@ -1219,6 +1219,7 @@ const AUTH_HINTS = {
   consent_redirect: "ต้องยืนยันสิทธิ์ที่หน้าจอ Google — กดยอมรับแล้วกลับมากดอีกครั้ง",
   network_error: "ต่อ Google ไม่ได้ — ตรวจอินเทอร์เน็ต",
   invalid_client: "Client ID ไม่ถูกต้อง หรือยังไม่ได้เพิ่ม Authorized JavaScript origins",
+  redirect_uri_mismatch: "ต้องลงทะเบียน redirect URI ในช่อง Authorized redirect URIs (ไม่ใช่ JavaScript origins) และต้องมี / ท้าย",
   403: "สิทธิ์ไม่พอ — ถ้าบัญชีอยู่ในโหมด Testing ต้องเพิ่มอีเมลเป็น Test user ก่อน",
 };
 
@@ -1242,6 +1243,11 @@ const AUTH_TIPS = {
   consent_redirect: [
     "ต้องกดยอมรับสิทธิ์ที่หน้าจอ Google ก่อน",
     "พอกดอนุญาตแล้วกลับมาที่เว็บ ต้องกด Sign in อีกครั้ง",
+  ],
+  redirect_uri_mismatch: [
+    "ต้องเพิ่มในช่อง Authorized redirect URIs (คนละช่องกับ JavaScript origins)",
+    "ค่าต้องตรงเป๊ะตามนี้ มีเครื่องหมาย / ท้าย: " + location.origin + "/",
+    "โค้ดชุดนี้ใช้ redirect_uri = " + location.origin + "/",
   ],
   network_error: ["ตรวจอินเทอร์เน็ต แล้วลองใหม่"],
   invalid_client: ["Client ID ไม่ถูกต้อง หรือยังไม่ได้เพิ่ม Authorized JavaScript origins"],
