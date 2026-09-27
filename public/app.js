@@ -1222,6 +1222,31 @@ const AUTH_HINTS = {
   403: "สิทธิ์ไม่พอ — ถ้าบัญชีอยู่ในโหมด Testing ต้องเพิ่มอีเมลเป็น Test user ก่อน",
 };
 
+/** วิธีแก้เฉพาะ error — แสดงเฉพาะขั้นตอนที่เกี่ยวกับปัญหานั้น */
+const AUTH_TIPS = {
+  popup_closed: [
+    "กด Sign in with Google แล้วอย่าเพิ่งปิดหน้าต่าง popup ที่เด้งขึ้น — ต้องเลือกบัญชีให้จบ",
+    "ถ้าหน้าต่างเด้งแล้วหายเองทันที แปลว่าเบราว์เซอร์บล็อก popup — ให้กดไอคอนล็อกที่แถบที่อยู่",
+    "แล้วเลือก Always allow popups แล้วลองใหม่",
+    "ลองในหน้าต่างปกติ (ไม่ใช่โหมดไม่ระบุตัวตน)",
+  ],
+  origin_mismatch: [
+    "ต้องเพิ่ม URL ของเว็บนี้ใน Authorized JavaScript origins ของ OAuth client",
+    "ต้องเป็น client ตัวเดียวกับที่แสดงใน Settings",
+    "เขียนตรง ๆ ไม่มีเครื่องหมาย / ท้าย",
+  ],
+  access_denied: [
+    "ถูกปฏิเสธสิทธิ์ หรือบัญชีนี้ยังไม่ได้อยู่ในรายชื่อ Test user",
+    "ถ้า OAuth consent screen อยู่สถานะ Testing ให้เพิ่มอีเมลตัวเองเป็น Test user",
+  ],
+  consent_redirect: [
+    "ต้องกดยอมรับสิทธิ์ที่หน้าจอ Google ก่อน",
+    "พอกดอนุญาตแล้วกลับมาที่เว็บ ต้องกด Sign in อีกครั้ง",
+  ],
+  network_error: ["ตรวจอินเทอร์เน็ต แล้วลองใหม่"],
+  invalid_client: ["Client ID ไม่ถูกต้อง หรือยังไม่ได้เพิ่ม Authorized JavaScript origins"],
+};
+
 function showAuthError(code, detail) {
   const hint = AUTH_HINTS[code] || AUTH_HINTS[String(detail).slice(0, 3)] || "";
   const msg = "ล็อกอินไม่สำเร็จ [" + code + "]" + (hint ? " — " + hint : "");
@@ -1235,6 +1260,24 @@ function showAuthError(code, detail) {
   if (panel) {
     panel.hidden = false;
     $("authErrorMsg").textContent = msg + (detail ? " (" + detail + ")" : "");
+    // สลับขั้นตอนให้ตรงกับ error ที่เกิดจริง
+    const tips = AUTH_TIPS[code] || null;
+    const ul = panel.querySelector("ul");
+    if (ul) {
+      ul.textContent = "";
+      if (tips) {
+        ul.hidden = false;
+        tips.forEach((t) => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
+      } else {
+        ul.hidden = true;
+      }
+    }
+  }
+  // popup โดนบล็อกเป็นปัญหาที่พบบ่อยที่สุดบนเบราว์เซอร์มือถือและ Safari
+  // เสนอทางเลือกแบบ redirect ทั้งหน้า ซึ่งไม่ต้องใช้ popup เลย
+  if (code === "popup_closed" || code === "popup") {
+    const alt = $("authAlt");
+    if (alt) alt.hidden = false;
   }
   console.warn("[auth]", code, detail);
 }
@@ -1244,6 +1287,93 @@ function clearAuthError() {
   if (panel) panel.hidden = true;
   const badge = $("authBadge");
   if (badge) badge.classList.remove("is-error");
+}
+
+/**
+ * ทางเลือกแบบ redirect ทั้งหน้า — ใช้เมื่อ popup ถูกเบราว์เซอร์บล็อก
+ * ใช้ Authorization Code + PKCE จึงไม่ต้องมี client secret
+ * ข้อดี: ทำงานได้ทุกเบราว์เซอร์ แม้ปิด popup ไว้
+ */
+async function signInWithRedirect() {
+  const clientId = (state.settings.clientId || "").trim();
+  if (!clientId) { toast("กรอก OAuth Client ID ใน Settings ก่อน"); return; }
+
+  const redirectUri = location.origin + "/";
+  const verifier = base64url(crypto.getRandomValues(new Uint8Array(32)));
+  const challenge = base64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
+  const stateNonce = base64url(crypto.getRandomValues(new Uint8Array(8)));
+
+  sessionStorage.setItem("fsae.pkce.verifier", verifier);
+  sessionStorage.setItem("fsae.oauth.state", stateNonce);
+
+  const qs = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    response_type: "code",
+    scope: "https://www.googleapis.com/auth/spreadsheets",
+    code_challenge: challenge,
+    code_challenge_method: "S256",
+    include_granted_scopes: "true",
+    access_type: "offline",
+    prompt: "consent",
+    state: stateNonce,
+  });
+  location.assign("https://accounts.google.com/o/oauth2/v2/auth?" + qs.toString());
+}
+
+function base64url(bytes) {
+  let bin = "";
+  const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  for (let i = 0; i < arr.length; i += 1) bin += String.fromCharCode(arr[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/** เรียกหลังกลับจากหน้า Google — แลก code เป็น token */
+async function completeRedirectSignIn() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get("code");
+  if (!code) return false;
+
+  // กัน CSRF
+  const savedState = sessionStorage.getItem("fsae.oauth.state");
+  if (!savedState || params.get("state") !== savedState) {
+    toast("state ไม่ตรง — ยกเลิกคำขอ");
+    return false;
+  }
+  const verifier = sessionStorage.getItem("fsae.pkce.verifier");
+  const err = params.get("error");
+  if (err) { showAuthError(err, params.get("error_description") || ""); return false; }
+  if (!verifier) { toast("ไม่พบ PKCE verifier"); return false; }
+
+  try {
+    const res = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: state.settings.clientId,
+        code: code,
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: location.origin + "/",
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      showAuthError(data.error || String(res.status), data.error_description || "");
+      return false;
+    }
+    state.token = data.access_token;
+    try { sessionStorage.setItem(STORAGE_KEYS.token, data.access_token); } catch (e) { /* ignore */ }
+    $("clientIdWarn").hidden = true;
+    updateAuthUi(true);
+    // ล้าง query string ไม่ให้ refresh แล้วแลก token ซ้ำ
+    history.replaceState({}, "", location.origin + "/");
+    toast("เชื่อม Google Sheets แล้ว");
+    return true;
+  } catch (e) {
+    showAuthError("network", e.message || String(e));
+    return false;
+  }
 }
 
 function requireToken() {
@@ -1875,6 +2005,7 @@ function bindEvents() {
     catch (err) { showAuthError(err.type || "popup", err.message || String(err)); }
   });
 
+  $("btnAuthAlt").addEventListener("click", signInWithRedirect);
   $("btnSaveSettings").addEventListener("click", () => {
     warnIfClientMismatch();
     if (readSettingsFromForm()) toast("บันทึกการตั้งค่าแล้ว"); else toast("บันทึกไม่สำเร็จ");
@@ -1923,6 +2054,7 @@ async function init() {
   bindEvents();
   loadStorage();
   applySettingsToForm();
+  await completeRedirectSignIn();
 
   try {
     const [bom, catalog, template] = await Promise.all([

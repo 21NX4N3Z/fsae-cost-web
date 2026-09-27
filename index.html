@@ -117,6 +117,9 @@ p{margin:0;text-wrap:pretty}
 
 .page{padding:var(--s5) var(--s5) var(--s6)}
 .page[hidden]{display:none}
+.auth-alt{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;
+  padding:var(--s3);border:1px dashed var(--danger-border);border-radius:var(--radius-sm);
+  background:var(--surface);font-size:.8125rem}
 .field-warn{margin:var(--s2) 0 0;padding:var(--s2) var(--s3);border-radius:var(--radius-sm);
   background:var(--warn-weak);border:1px solid var(--warn-border);color:var(--warn);
   font-size:.8125rem;line-height:1.5}
@@ -562,6 +565,10 @@ p{margin:0;text-wrap:pretty}
     <div class="auth-error" id="authError" role="alert" hidden>
       <strong>เชื่อม Google Sheets ไม่สำเร็จ</strong>
       <span id="authErrorMsg"></span>
+      <div class="auth-alt" id="authAlt" hidden>
+        <span>ถ้า popup ถูกเบราว์เซอร์บล็อก ใช้วิธีนี้แทน — ไม่ต้องเปิดหน้าต่างเลย</span>
+        <button type="button" class="btn" id="btnAuthAlt">เชื่อมแบบไม่ใช้ popup</button>
+      </div>
       <ul>
         <li>ต้องเพิ่ม URL ของเว็บนี้ใน <b>Authorized JavaScript origins</b> ของ OAuth client</li>
         <li>ถ้าบัญชีอยู่ในโหมด Testing ต้องเพิ่มอีเมลเป็น <b>Test user</b> ที่หน้า OAuth consent screen</li>
