@@ -1220,6 +1220,7 @@ const AUTH_HINTS = {
   network_error: "ต่อ Google ไม่ได้ — ตรวจอินเทอร์เน็ต",
   invalid_client: "Client ID ไม่ถูกต้อง หรือยังไม่ได้เพิ่ม Authorized JavaScript origins",
   redirect_uri_mismatch: "ต้องลงทะเบียน redirect URI ในช่อง Authorized redirect URIs (ไม่ใช่ JavaScript origins) และต้องมี / ท้าย",
+  invalid_request: "OAuth client ชนิดนี้ต้องใช้ client_secret เมื่อแลก code ซึ่งใช้ในหน้าเว็บสาธารณะไม่ได้ — ให้ใช้แบบ popup แทน",
   403: "สิทธิ์ไม่พอ — ถ้าบัญชีอยู่ในโหมด Testing ต้องเพิ่มอีเมลเป็น Test user ก่อน",
 };
 
@@ -1248,6 +1249,12 @@ const AUTH_TIPS = {
     "ต้องเพิ่มในช่อง Authorized redirect URIs (คนละช่องกับ JavaScript origins)",
     "ค่าต้องตรงเป๊ะตามนี้ มีเครื่องหมาย / ท้าย: " + location.origin + "/",
     "โค้ดชุดนี้ใช้ redirect_uri = " + location.origin + "/",
+  ],
+  invalid_request: [
+    "OAuth client นี้เป็นชนิด Web application ซึ่ง Google บังคับให้ส่ง client_secret ตอนแลก code",
+    "secret ห้ามอยู่ในโค้ดหน้าเว็บ — วิธี redirect จึงใช้ไม่ได้",
+    "ให้ใช้ปุ่ม Sign in with Google แบบปกติ (popup) แทน",
+    "ถ้า popup ถูกบล็อก ให้กดไอคอนล็อกที่แถบที่อยู่ แล้วตั้ง Always allow popups",
   ],
   network_error: ["ตรวจอินเทอร์เน็ต แล้วลองใหม่"],
   invalid_client: ["Client ID ไม่ถูกต้อง หรือยังไม่ได้เพิ่ม Authorized JavaScript origins"],
@@ -1279,8 +1286,9 @@ function showAuthError(code, detail) {
       }
     }
   }
-  // popup โดนบล็อกเป็นปัญหาที่พบบ่อยที่สุดบนเบราว์เซอร์มือถือและ Safari
-  // เสนอทางเลือกแบบ redirect ทั้งหน้า ซึ่งไม่ต้องใช้ popup เลย
+  // วิธี redirect ใช้ไม่ได้กับ OAuth client ชนิด Web application
+  // เพราะ Google บังคับให้ส่ง client_secret ตอนแลก code ซึ่งห้ามอยู่ในหน้าเว็บ
+  // จึงเหลือ popup เป็นทางเดียว และต้องแก้ที่ฝั่งเบราว์เซอร์
   if (code === "popup_closed" || code === "popup") {
     const alt = $("authAlt");
     if (alt) alt.hidden = false;
@@ -2028,7 +2036,7 @@ function bindEvents() {
     catch (err) { showAuthError(err.type || "popup", err.message || String(err)); }
   });
 
-  $("btnAuthAlt").addEventListener("click", signInWithRedirect);
+  $("btnAuthRetry").addEventListener("click", () => { clearAuthError(); $("btnAuth").click(); });
   $("btnSaveSettings").addEventListener("click", () => {
     warnIfClientMismatch();
     if (readSettingsFromForm()) toast("บันทึกการตั้งค่าแล้ว"); else toast("บันทึกไม่สำเร็จ");
