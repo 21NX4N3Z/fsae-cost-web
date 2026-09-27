@@ -777,6 +777,7 @@ p{margin:0;text-wrap:pretty}
           <p class="page-sub">Part ใน BOM ที่ยังไม่มีรายการต้นทุน &mdash; ตรวจสถานะจริงจาก Google Sheets</p>
         </div>
         <div class="topbar-actions">
+          <button type="button" class="btn" id="btnMatchSheet">จับคู่ part กับ tab ในชีต</button>
           <button type="button" class="btn" id="btnScanSheet">Scan Google Sheets</button>
         </div>
       </div>
@@ -798,6 +799,32 @@ p{margin:0;text-wrap:pretty}
             </thead>
             <tbody id="missingRows"></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- ตารางยืนยันการจับคู่ -->
+      <div class="card" id="matchPanel" hidden>
+        <div class="card-head">
+          <h3>ยืนยันการจับคู่ part กับ tab ในชีต</h3>
+          <span class="sub">BOM ใช้เลข part คนละแบบกับชีต — เลือก tab ที่ถูกต้องก่อน Sync</span>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <caption class="sr-only">Proposed mapping between BOM parts and sheet tabs</caption>
+            <thead>
+              <tr>
+                <th scope="col">P/N (BOM)</th>
+                <th scope="col">ชื่อใน BOM</th>
+                <th scope="col">Assembly</th>
+                <th scope="col">Tab ในชีต</th>
+                <th scope="col">ความใกล้เคียง</th>
+              </tr>
+            </thead>
+            <tbody id="matchRows"></tbody>
+          </table>
+          <div class="topbar-actions" style="justify-content:flex-end;margin-top:var(--s4)">
+            <button type="button" class="btn" id="btnSaveMatches">บันทึกการจับคู่</button>
+          </div>
         </div>
       </div>
     </section>

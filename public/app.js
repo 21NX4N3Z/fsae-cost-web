@@ -56,6 +56,7 @@ const STORAGE_KEYS = {
   entries: "fsae.entries.v2",
   settings: "fsae.settings.v2",
   token: "fsae.token.v1",
+  partMap: "fsae.partmap.v1",
 };
 
 const GOOGLE_CLIENT_ID = "1017305531254-5s4hh89qq1vpmdbbhtgp8g5cdef704t7.apps.googleusercontent.com";
@@ -79,8 +80,12 @@ const state = {
   modal: { catalog: "materials", target: "material" },
   token: null,
   conflict: null,
-  missing: null,   // { pn: {costed, sheetName} } จากการสแกนชีต
+  missing: null,        // { pn: {status,...} } จากการสแกนชีต
   scanBusy: false,
+  matchBusy: false,
+  matchProposals: null,  // ผลจับคู่ที่เสนอให้ผู้ใช้ยืนยัน
+  sheetHeaders: [],      // หัวข้อของทุก tab ที่อ่านมา
+  partMap: {},           // pn -> tab name (ผู้ใช้ยืนยันแล้ว)
 };
 
 const $ = (id) => document.getElementById(id);
@@ -686,6 +691,170 @@ function renderCatalogPage() {
 }
 
 // ------------------------------------------------------------
+// Part <-> Sheet tab matching
+// BOM ใช้เลข part คนละแบบกับชีต (FR 00230-AA vs AA 30001-1)
+// จึงต้องให้ผู้ใช้ยืนยันการจับคู่ก่อน Sync
+// ------------------------------------------------------------
+
+function normKey(s) {
+  return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/** คะแนนความคล้าย 0-1 ระหว่างชื่อ part ของ BOM กับชื่อในชีต */
+function similarity(a, b) {
+  const x = normKey(a), y = normKey(b);
+  if (!x || !y) return 0;
+  if (x === y) return 1;
+  if (y.includes(x) || x.includes(y)) return 0.9;
+
+  // token overlap
+  const ta = new Set(x.split(" "));
+  const tb = new Set(y.split(" "));
+  let hit = 0;
+  ta.forEach((t) => { if (tb.has(t)) hit += 1; });
+  return ta.size ? hit / ta.size : 0;
+}
+
+/** อ่านหัวข้อแถวของ tab (assembly / part / p-n) */
+async function readTabHeader(sheetId) {
+  const res = await sheetsGet("/values/" + encodeURIComponent("'" + sheetId.title + "'") + "!A1:H8");
+  const rows = res.values || [];
+  const pick = (r, c) => {
+    const row = rows[r] || [];
+    return (row[c] || "").trim();
+  };
+  return {
+    tab: sheetId.title,
+    system: pick(1, 2),
+    assembly: pick(2, 2),
+    part: pick(3, 2),
+    pnBase: pick(4, 2),
+    suffix: pick(5, 2),
+  };
+}
+
+/** สแกนชีตแล้วเสนอการจับคู่ให้ผู้ใช้ยืนยัน */
+async function scanForMatching() {
+  if (!requireToken()) return;
+  if (state.matchBusy) return;
+  state.matchBusy = true;
+  const btn = $("btnMatchSheet");
+  if (btn) btn.disabled = true;
+  $("missingSummary").textContent = "กำลังอ่านหัวข้อ tab ทั้งหมด...";
+
+  try {
+    const tabs = await listTabs();
+    // ข้าม tab ที่ไม่ใช่ของ part (ไม่ขึ้นต้นด้วย AA + เลข)
+    const partTabs = tabs.filter((t) => /^AA\s*\d/.test(t.title.trim()));
+    const headers = [];
+    for (let i = 0; i < partTabs.length; i += 1) {
+      try {
+        headers.push(await readTabHeader(partTabs[i]));
+      } catch (err) { /* tab อ่านไม่ได้ข้ามไป */ }
+      if (i % 10 === 9) {
+        $("missingSummary").textContent = "อ่านแล้ว " + (i + 1) + "/" + partTabs.length;
+      }
+    }
+
+    // เสนอคู่ที่ดีที่สุดต่อ part ใน BOM
+    const proposals = [];
+    Object.keys(state.bom).forEach((assembly) => {
+      partsOf(assembly).forEach((r) => {
+        let best = null, bestScore = 0;
+        headers.forEach((h) => {
+          // ให้น้ำหนักชื่อ assembly ด้วย เพราะตรงกันแม่นกว่า
+          const asmScore = similarity(assembly, h.assembly);
+          const partScore = similarity(r[1], h.part);
+          const score = partScore * 0.65 + asmScore * 0.35;
+          if (score > bestScore) { bestScore = score; best = h; }
+        });
+        proposals.push({
+          pn: r[0],
+          bomName: r[1],
+          assembly: assembly,
+          sheetTab: bestScore >= 0.45 ? best.tab : "",
+          sheetName: bestScore >= 0.45 ? best.part : "",
+          assemblySheet: best ? best.assembly : "",
+          score: Math.round(bestScore * 100),
+        });
+      });
+    });
+
+    state.sheetHeaders = headers;
+    state.matchProposals = proposals;
+    renderMatchTable();
+    $("matchPanel").hidden = false;
+    const good = proposals.filter((p) => p.sheetTab).length;
+    $("missingSummary").textContent = "อ่าน " + headers.length + " tabs — เดาการจับคู่ได้ " +
+      good + "/" + proposals.length + " parts (ต้องตรวจและบันทึกด้านล่าง)";
+  } catch (err) {
+    $("missingSummary").textContent = "อ่านไม่สำเร็จ: " + err.message;
+  } finally {
+    state.matchBusy = false;
+    if (btn) btn.disabled = false;
+  }
+}
+
+function renderMatchTable() {
+  const body = $("matchRows");
+  if (!body) return;
+  body.textContent = "";
+  (state.matchProposals || []).forEach((p, i) => {
+    const tr = el("tr");
+
+    const c1 = el("td", "mono", p.pn);
+    tr.appendChild(c1);
+    tr.appendChild(el("td", null, p.bomName));
+    tr.appendChild(el("td", null, p.assembly));
+
+    const c4 = el("td");
+    const sel = document.createElement("select");
+    sel.id = "matchSel-" + i;
+    const none = el("option", null, "— ไม่ผูก —");
+    none.value = "";
+    sel.appendChild(none);
+    (state.sheetHeaders || []).forEach((h) => {
+      const o = el("option", null, h.tab + "  —  " + h.part);
+      o.value = h.tab;
+      if (h.tab === p.sheetTab) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", () => {
+      state.matchProposals[i].sheetTab = sel.value;
+      state.matchProposals[i].chosen = sel.value !== "";
+    });
+    c4.appendChild(sel);
+    tr.appendChild(c4);
+
+    const c5 = el("td");
+    const badge = el("span", "tag " + (p.score >= 70 ? "tag-frame" : "tag-wait"),
+      p.score + "%");
+    c5.appendChild(badge);
+    if (p.sheetName) c5.appendChild(document.createTextNode(" " + p.sheetName.slice(0, 28)));
+    tr.appendChild(c5);
+
+    body.appendChild(tr);
+  });
+}
+
+/** บันทึกการจับคู่ที่ผู้ใช้ยืนยันแล้ว */
+function saveMatches() {
+  const map = {};
+  (state.matchProposals || []).forEach((p) => {
+    if (p.sheetTab) map[p.pn] = p.sheetTab;
+  });
+  try {
+    localStorage.setItem(STORAGE_KEYS.partMap, JSON.stringify(map));
+  } catch (err) {
+    toast("บันทึกไม่สำเร็จ: " + err.message);
+    return;
+  }
+  state.partMap = map;
+  toast("บันทึกการจับคู่ " + Object.keys(map).length + " parts แล้ว — Sync จะใช้ตารางนี้");
+  $("matchPanel").hidden = true;
+}
+
+// ------------------------------------------------------------
 // Missing Cost — สถานะจริงจากชีต
 // ------------------------------------------------------------
 
@@ -1201,9 +1370,15 @@ function tabCandidates(entry) {
   // 1) ผู้ใช้กำหนดเอง
   if (entry.targetTab) list.push(entry.targetTab);
   // 2) รูปแบบมาตรฐานของชีต
-  if (base) list.push("AA " + base + (suffix ? "-" + suffix : ""));
+  //    P/N Base ในชีตคือ '30001-1' ซึ่งมี '-1' ติดมาแล้ว
+  //    ส่วน Suffix ('AA') คือ revision ไม่ได้อยู่ในชื่อ tab
+  if (base) {
+    const looksLikeBase = /^\d{4,5}-\d+$/.test(base);
+    list.push("AA " + (looksLikeBase ? base : base + (suffix ? "-" + suffix : "")));
+  }
   // 3) เอาเลขใน P/N มาประกอบเอง
-  if (baseNums.length) list.push("AA " + baseNums.join(""));
+  if (baseNums.length >= 2) list.push("AA " + baseNums[0] + "-" + baseNums[1]);
+  else if (baseNums.length === 1) list.push("AA " + baseNums[0]);
   if (nums.length >= 2) list.push("AA " + nums[0] + "-" + nums[1]);
   else if (nums.length === 1) list.push("AA " + nums[0] + "-" + suffix);
   // 4) ใช้ P/N ตรง ๆ
@@ -1215,6 +1390,19 @@ function tabCandidates(entry) {
 async function resolveTab(entry, tabs) {
   const names = tabs.map((t) => t.title);
   const trimmed = names.map((n) => n.trim());
+
+  // 0) ตารางจับคู่ที่ผู้ใช้ยืนยันไว้ — เชื่อถือที่สุด
+  const mapped = state.partMap && state.partMap[entry.pn];
+  if (mapped) {
+    const i = trimmed.indexOf(String(mapped).trim());
+    if (i >= 0) return { tab: names[i], from: "partMap" };
+  }
+  // 0b) ช่อง Target tab ที่พิมพ์เอง
+  if (entry.targetTab) {
+    const i = trimmed.indexOf(entry.targetTab.trim());
+    if (i >= 0) return { tab: names[i], from: "targetTab" };
+  }
+
   for (const cand of tabCandidates(entry)) {
     const i = trimmed.indexOf(cand.trim());
     if (i >= 0) return { tab: names[i], exact: cand.trim() === cand || true };
@@ -1497,6 +1685,10 @@ function loadStorage() {
     }
   } catch (err) { /* ไม่มี settings */ }
   try {
+    const m = JSON.parse(localStorage.getItem(STORAGE_KEYS.partMap) || "{}");
+    if (m && typeof m === "object") state.partMap = m;
+  } catch (err) { /* ไม่มีแมป */ }
+  try {
     state.token = sessionStorage.getItem(STORAGE_KEYS.token);
   } catch (err) { /* ไม่มี session */ }
 }
@@ -1566,6 +1758,8 @@ function bindEvents() {
 
   $("inpBomSearch").addEventListener("input", renderBom);
   $("btnScanSheet").addEventListener("click", scanSheetForMissing);
+  $("btnMatchSheet").addEventListener("click", scanForMatching);
+  $("btnSaveMatches").addEventListener("click", saveMatches);
   $("inpMissingSearch").addEventListener("input", renderMissing);
   $("btnBomClear").addEventListener("click", () => { $("inpBomSearch").value = ""; renderBom(); });
 
@@ -1670,3 +1864,7 @@ async function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
+/** หน่วยทดสอบ: similarity + tabCandidates (เรียกจาก scripts/test_match.js) */
+const __test = { similarity, normKey, tabCandidates, colIndex, evaluateFormula, round4 };
+if (typeof module !== "undefined") module.exports = __test;
