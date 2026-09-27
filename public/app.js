@@ -1155,7 +1155,7 @@ function showPage(name) {
   if (name === "bom") { renderAssemblyList(); renderBom(); }
   if (name === "missing") renderMissing();
   if (name === "catalogs") renderCatalogPage();
-  if (name === "dashboard") renderDashboard();
+  if (name === "dashboard") { renderDashboard(); renderSummary(); }
   if (name === "settings") { applySettingsToForm(); warnIfClientMismatch(); }
 }
 
@@ -2079,6 +2079,35 @@ function fillCatalogMeta() {
   $("setImported").textContent = date;
 }
 
+/** รายงานต้นทุนรวมต่อ assembly จาก cost-summary.json */
+function renderSummary() {
+  const host = $("summaryBody");
+  const tot = $("summaryTotal");
+  if (!host || !state.summary) return;
+  const s = state.summary;
+  const T = s.__TOTAL__ || {};
+  host.textContent = "";
+
+  Object.keys(s).forEach((k) => {
+    if (k === "__TOTAL__") return;
+    const a = s[k];
+    if (!a.parts) return;
+    const tr = el("tr");
+    tr.appendChild(el("td", null, k));
+    const p = el("td", "num", String(a.parts));
+    tr.appendChild(p);
+    tr.appendChild(el("td", "num", String(a.costed)));
+    tr.appendChild(el("td", "num", String(a.missing)));
+    tr.appendChild(el("td", "num", money(a.partCost)));
+    host.appendChild(tr);
+  });
+
+  if (tot) {
+    if (tot) $("summaryTotal").textContent =
+      money(tot.partCost) + "  ·  " + tot.costed + "/" + tot.parts + " parts มีต้นทุน";
+  }
+}
+
 let booted = false;
 
 async function init() {
@@ -2091,14 +2120,18 @@ async function init() {
   await completeRedirectSignIn();
 
   try {
-    const [bom, catalog, template] = await Promise.all([
+    const [bom, catalog, template, costs, summary] = await Promise.all([
       loadJson("data/bom.json"),
       loadJson("data/catalogs.json"),
       loadJson("data/sheet-template.json").catch(() => null),
+      loadJson("data/costs.json").catch(() => null),
+      loadJson("data/cost-summary.json").catch(() => null),
     ]);
     state.bom = bom || {};
     state.catalog = catalog || {};
     state.template = template;
+    state.costs = costs ? costs.byPn || costs : null;
+    state.summary = summary;
   } catch (err) {
     $("topMeta").textContent = "โหลดข้อมูลไม่สำเร็จ: " + err.message;
     toast("โหลดข้อมูลไม่สำเร็จ — ตรวจว่า dev server ทำงานอยู่");
@@ -2111,6 +2144,7 @@ async function init() {
   renderAssemblyList();
   renderBom();
   renderCatalogPage();
+  renderSummary();
   markSaved();
 }
 

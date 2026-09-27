@@ -1,0 +1,140 @@
+{
+ "FRAME AND BODY ASSEMBLY": {
+  "parts": 10,
+  "costed": 10,
+  "missing": 0,
+  "partCost": 3061.2953,
+  "sections": {
+   "material": 3.4425,
+   "process": 264.2832,
+   "fastener": 0.0,
+   "tooling": 6.17
+  }
+ },
+ "FRAME ASSEMBLY": {
+  "parts": 60,
+  "costed": 59,
+  "missing": 1,
+  "partCost": 200.3651,
+  "sections": {
+   "material": 64.3746,
+   "process": 135.9904,
+   "fastener": 0.0,
+   "tooling": 0.0
+  }
+ },
+ "SUSPENSION MOUNTING ASSEMBLY": {
+  "parts": 38,
+  "costed": 28,
+  "missing": 10,
+  "partCost": 82.3313,
+  "sections": {
+   "material": 17.514,
+   "process": 64.8171,
+   "fastener": 0.0,
+   "tooling": 0.0
+  }
+ },
+ "ELECTRICAL MOUNTING ASSEMBLY": {
+  "parts": 15,
+  "costed": 12,
+  "missing": 3,
+  "partCost": 22.8722,
+  "sections": {
+   "material": 2.7022,
+   "process": 20.1699,
+   "fastener": 0.0,
+   "tooling": 0.0
+  }
+ },
+ "PEDALS ASSEMBLY": {
+  "parts": 33,
+  "costed": 5,
+  "missing": 28,
+  "partCost": 25.693,
+  "sections": {
+   "material": 0.6975,
+   "process": 2.6195,
+   "fastener": 0.0,
+   "tooling": 0.0
+  }
+ },
+ "BODY ASSEMBLY": {
+  "parts": 12,
+  "costed": 10,
+  "missing": 2,
+  "partCost": 2375.6497,
+  "sections": {
+   "material": 1121.6276,
+   "process": 1189.5021,
+   "fastener": 0.51,
+   "tooling": 64.01
+  }
+ },
+ "FRAME JIG ASSEMBLY": {
+  "parts": 20,
+  "costed": 2,
+  "missing": 18,
+  "partCost": 57.38,
+  "sections": {
+   "material": 36.18,
+   "process": 21.2,
+   "fastener": 0.0,
+   "tooling": 0.0
+  }
+ },
+ "DRIVETRAIN MOUNTING ASSEMBLY": {
+  "parts": 12,
+  "costed": 1,
+  "missing": 11,
+  "partCost": 2.5702,
+  "sections": {
+   "material": 0.18,
+   "process": 2.3902,
+   "fastener": 0.0,
+   "tooling": 0.0
+  }
+ },
+ "DRIVERS PROTECTION MOUNTING ASSEMBLY": {
+  "parts": 14,
+  "costed": 7,
+  "missing": 7,
+  "partCost": 32.3048,
+  "sections": {
+   "material": 2.0475,
+   "process": 30.2573,
+   "fastener": 0.0,
+   "tooling": 0.0
+  }
+ },
+ "AERODYNAMICS PART ASSEMBLY": {
+  "parts": 0,
+  "costed": 0,
+  "missing": 0,
+  "partCost": 0.0,
+  "sections": {
+   "material": 0.0,
+   "process": 0.0,
+   "fastener": 0.0,
+   "tooling": 0.0
+  }
+ },
+ "ANTI INTRUSION PLATE": {
+  "parts": 0,
+  "costed": 0,
+  "missing": 0,
+  "partCost": 0.0,
+  "sections": {
+   "material": 0.0,
+   "process": 0.0,
+   "fastener": 0.0,
+   "tooling": 0.0
+  }
+ },
+ "__TOTAL__": {
+  "partCost": 5860.4616,
+  "parts": 214,
+  "costed": 134,
+  "missing": 80
+ }
+}

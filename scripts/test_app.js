@@ -61,7 +61,8 @@ await sleep(300);
 
 check("no runtime errors on boot", errors.length === 0, errors.join(" | "));
 check("topbar shows catalog meta", /Supplement V2252/.test($("topMeta").textContent), $("topMeta").textContent);
-check("assemblies populated", $("selAssembly").options.length === 7, $("selAssembly").options.length + " options");
+// BP18 Part BOM-2.xlsx แผ่น FRAME = 11 assembly (ตรวจจากไฟล์ต้นทาง)
+check("assemblies populated", $("selAssembly").options.length === 11, $("selAssembly").options.length + " options");
 check("parts populated", $("selPart").options.length > 0, $("selPart").options.length + " options");
 check("cost container has 4 sections", $("costContainer").querySelectorAll(".cost-section").length === 4,
   $("costContainer").querySelectorAll(".cost-section").length + " sections");

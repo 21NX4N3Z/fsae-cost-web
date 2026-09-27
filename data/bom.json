@@ -1,191 +1,1520 @@
 {
-  "FRAME ASSEMBLY": [
-    [
-      "FR 00230-AA",
-      "FR BULKHEAD R",
-      "FRAME"
-    ],
-    [
-      "FR 00201-AA",
-      "FR BULKHEAD L",
-      "FRAME"
-    ],
-    [
-      "FR 00202-AA",
-      "FR BULKHEAD UPR",
-      "FRAME"
-    ],
-    [
-      "FR 00203-AA",
-      "FR BULKHEAD LWR",
-      "FRAME"
-    ],
-    [
-      "FR 00204-AA",
-      "FR BULKHEAD BRACING",
-      "FRAME"
-    ],
-    [
-      "FR 00205-AA",
-      "FR HOOP BRACING R",
-      "FRAME"
-    ],
-    [
-      "FR 00206-AA",
-      "FR HOOP BRACING L",
-      "FRAME"
-    ],
-    [
-      "FR 00207-AA",
-      "FR BULKHEAD SUPPORT UPR R",
-      "FRAME"
-    ],
-    [
-      "FR 00208-AA",
-      "FR BULKHEAD SUPPORT MID R",
-      "FRAME"
-    ],
-    [
-      "FR 00209-AA",
-      "FR BULKHEAD SUPPORT LWR R",
-      "FRAME"
-    ],
-    [
-      "FR A0100-AA",
-      "FRAME ASSEMBLY",
-      "FRAME"
-    ]
+ "FRAME AND BODY ASSEMBLY": [
+  [
+   "FR A0200-AA",
+   "FRAME ASSEMBLY",
+   "",
+   "",
+   ""
   ],
-  "SUSPENSION MOUNTING ASSEMBLY": [
-    [
-      "FR 00301-AA",
-      "FR R UPR FR A-ARM BRACKET",
-      "FRAME"
-    ],
-    [
-      "FR 00302-AA",
-      "FR R UPR RR A-ARM BRACKET",
-      "FRAME"
-    ],
-    [
-      "FR 00303-AA",
-      "FR L UPR FR A-ARM BRACKET",
-      "FRAME"
-    ],
-    [
-      "FR 00304-AA",
-      "FR L UPR RR A-ARM BRACKET",
-      "FRAME"
-    ],
-    [
-      "FR 00305-AA",
-      "FR L UPR FR A-ARM BRACKET",
-      "FRAME"
-    ],
-    [
-      "FR 00306-AA",
-      "FR L UPR RR A-ARM BRACKET",
-      "FRAME"
-    ],
-    [
-      "FR 00307-AA",
-      "FR L LWR FR A-ARM BRACKET",
-      "FRAME"
-    ],
-    [
-      "FR 00308-AA",
-      "FR L LWR RR A-ARM BRACKET",
-      "FRAME"
-    ],
-    [
-      "FR A0200-AA",
-      "SUSPENSION MOUNTING ASSEMBLY",
-      "FRAME"
-    ]
+  [
+   "FR A0300-AA",
+   "SUSPENSION MOUNTING ASSEMBLY",
+   "",
+   "",
+   ""
   ],
-  "ELECTRICAL MOUNTING ASSEMBLY": [
-    [
-      "FR 00401-AA",
-      "ELECTRICAL MOUNTING 1",
-      "FRAME"
-    ],
-    [
-      "FR 00402-AA",
-      "ELECTRICAL MOUNTING 2",
-      "FRAME"
-    ],
-    [
-      "FR A0300-AA",
-      "ELECTRICAL MOUNTING ASSEMBLY",
-      "FRAME"
-    ]
+  [
+   "FR A0400-AA",
+   "ELECTRICAL MOUNTING ASSEMBLY",
+   "",
+   "",
+   ""
   ],
-  "COOLING MOUNTING ASSEMBLY": [
-    [
-      "FR 00600-AA",
-      "COOLING MOUNTING",
-      "FRAME"
-    ]
+  [
+   "FR A0500-AA",
+   "PEDALS ASSEMBLY",
+   "",
+   "",
+   ""
   ],
-  "BODY ASSEMBLY": [
-    [
-      "FR 00701-AA",
-      "NOSE CONE",
-      "BODY"
-    ],
-    [
-      "FR 00702-AA",
-      "RIGHT SIDE BODY SHELL",
-      "BODY"
-    ],
-    [
-      "FR 00703-AA",
-      "LEFT SIDE BODY SHELL",
-      "BODY"
-    ],
-    [
-      "FR 00704-AA",
-      "BODY PANEL",
-      "BODY"
-    ],
-    [
-      "FR 00705-AA",
-      "BODY PANEL 2",
-      "BODY"
-    ],
-    [
-      "FR A0700-AA",
-      "BODY ASSEMBLY",
-      "BODY"
-    ]
+  [
+   "FR A0600-AA",
+   "ANTI INTRUSION PLATE",
+   "",
+   "",
+   ""
   ],
-  "FRAME JIG ASSEMBLY": [
-    [
-      "FR A0800-AA",
-      "FRAME JIG ASSEMBLY",
-      "FRAME"
-    ]
+  [
+   "FR A0700-AA",
+   "BODY ASSEMBLY",
+   "",
+   "",
+   ""
   ],
-  "DRIVETRAIN MOUNTING ASSEMBLY": [
-    [
-      "FR 01001-AA",
-      "DRIVETRAIN MOUNT 1",
-      "FRAME"
-    ],
-    [
-      "FR 01002-AA",
-      "DRIVETRAIN MOUNT 2",
-      "FRAME"
-    ],
-    [
-      "FR 01003-AA",
-      "DRIVETRAIN MOUNT 3",
-      "FRAME"
-    ],
-    [
-      "FR A1000-AA",
-      "DRIVETRAIN MOUNTING ASSEMBLY",
-      "FRAME"
-    ]
+  [
+   "FR A0800-AA",
+   "FRAME JIG ASSEMBLY",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0900-AA",
+   "DRIVETRAIN MOUNTING ASSEMBLY",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A1000-AA",
+   "DRIVERS PROTECTION MOUNTING ASSEMBLY",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A1100-AA",
+   "AERODYNAMICS PART ASSEMBLY",
+   "",
+   "",
+   ""
   ]
+ ],
+ "FRAME ASSEMBLY": [
+  [
+   "FR 00201-AA",
+   "FR BULKHEAD R",
+   "AISI 4130",
+   "",
+   ""
+  ],
+  [
+   "FR 00202-AA",
+   "FR BULKHEAD L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00203-AA",
+   "FR BULKHEAD UPR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00204-AA",
+   "FR BULKHEAD LWR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00205-AA",
+   "FR BULKHEAD BRACING",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00206-AA",
+   "FR HOOP BRACING R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00207-AA",
+   "FR HOOB BRACING L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00208-AA",
+   "FR FR BULKHEAD SUPPORT UPR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00209-AA",
+   "FR FR BULKHEAD SUPPORT MID R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00210-AA",
+   "FR FR BULKHEAD SUPPORT LWR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00211-AA",
+   "FR BULKHEAD SUPPORT PLR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00212-AA",
+   "RR FR BULKHEAD SUPPORT UPR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00213-AA",
+   "RR FR BULKHEAD SUPPORT MID R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00214-AA",
+   "RR FR BULKHEAD SUPPORT LWR R",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00215-AA",
+   "FR FR BULKHEAD SUPPORT UPR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00216-AA",
+   "FR FR BULKHEAD SUPPORT MID L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00217-AA",
+   "FR FR BULKHEAD SUPPORT LWR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00218-AA",
+   "FR BULKHEAD SUPPORT PLR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00219-AA",
+   "RR FR BULKHEAD SUPPORT UPR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00220-AA",
+   "RR FR BULKHEAD SUPPORT MID L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00221-AA",
+   "RR FR BULKHEAD SUPPORT LWR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00222-AA",
+   "FR FR BULKHEAD SUPPORT LWR CTR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00223-AA",
+   "RR FR BULKHEAD SUPPORT LWR CTR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00224-AA",
+   "FR HOOP",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00225-AA",
+   "SIDE UPR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00226-AA",
+   "SIDE IMPACT UPR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00227-AA",
+   "SIDE IMPACT DIAG R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00228-AA",
+   "SIDE IMPACT LWR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00229-AA",
+   "SIDE UPR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00230-AA",
+   "SIDE IMPACT UPR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00231-AA",
+   "SIDE IMPACT DIAG L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00232-AA",
+   "SIDE IMPACT LWR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00233-AA",
+   "COCKPIT BRACING",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00234-AA",
+   "MAIN HOOP",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00235-AA",
+   "SHOULDER HARNESS MOUNTING BAR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00236-AA",
+   "MAINHOOP BRACING CTR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00237-AA",
+   "MAIN HOOP BRACING R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00238-AA",
+   "MAIN HOOP BRACING L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00239-AA",
+   "MAIN HOOP BRACING SUPPORT UPR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00240-AA",
+   "MAIN HOOP BRACING SUPPORT MID R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00241-AA",
+   "MAIN HOOP BRACING SUPPORT LWR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00242-AA",
+   "RR MAIN HOOP BRACING SUPPORT R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00243-AA",
+   "MAIN HOOP BRACING SUPPORT UPR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00244-AA",
+   "MAIN HOOP BRACING SUPPORT MID L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00245-AA",
+   "MAIN HOOP BRACING SUPPORT LWR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00246-AA",
+   "RR MAIN HOOP BRACING SUPPORT L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00247-AA",
+   "MAIN HOOP BRACING SUPPORT UPR CTR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00248-AA",
+   "MAIN HOOP BRACING SUPPORT LWR CTR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00249-AA",
+   "COMPONENT PROTECTION UPR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00250-AA",
+   "COMPONENT PROTECTION MID R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00251-AA",
+   "COMPONENT PROTECTION LWR R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00252-AA",
+   "COMPONENT PROTECTION UPR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00253-AA",
+   "COMPONENT PROTECTION MID L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00254-AA",
+   "COMPONENT PROTECTION LWR L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00255-AA",
+   "RR COMPONENT PROTECTION UPR CTR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00256-AA",
+   "RR COMPONENT PROTECTION LWR CTR",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00257-AA",
+   "RR COMPONENT PROTECTION R",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00258-AA",
+   "RR COMPONENT PROTECTION L",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00259-AA",
+   "FR DECOUPLED MOUNT",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00260-AA",
+   "TUBE END",
+   "AISI 4130",
+   "DONE",
+   "NOT DONE"
+  ]
+ ],
+ "SUSPENSION MOUNTING ASSEMBLY": [
+  [
+   "FR 00301-AA",
+   "FR R UPR FR A-ARM BRACKET",
+   "AISI 4130",
+   "",
+   ""
+  ],
+  [
+   "FR 00302-AA",
+   "FR R UPR RR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00303-AA",
+   "FR R LWR FR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00304-AA",
+   "FR R LWR RR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00305-AA",
+   "FR L UPR FR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00306-AA",
+   "FR L UPR RR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00307-AA",
+   "FR L LWR FR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00308-AA",
+   "FR L LWR RR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00309-AA",
+   "RR R UPR FR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00310-AA",
+   "RR R UPR RR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00311-AA",
+   "RR R LWR FR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00312-AA",
+   "RR R LWR RR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00313-AA",
+   "RR L UPR FR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00314-AA",
+   "RR L UPR RR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00315-AA",
+   "RR L LWR FR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00316-AA",
+   "RR L LWR RR A-ARM BRACKET",
+   "AISI 4130",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00317-AA",
+   "FR DECOUPLED FR FR BRACKET x 2",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00318-AA",
+   "FR DECOUPLED FR RR BRACKET x 2",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00319-AA",
+   "FR DECOUPLED RR BRACKET x 4",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00320-AA",
+   "RR DECOUPLED FR FR BRACKET x 2",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00321-AA",
+   "RR DECOUPLED FR RR BRACKET x 2",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00322-AA",
+   "RR DECOUPLED RR BRACKET x 4",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00323-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00324-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00325-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00326-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00327-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00328-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00329-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00330-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00331-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00332-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00333-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00334-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00335-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00336-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00337-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00338-AA",
+   "",
+   "Steel, Alloy",
+   "NOT DONE",
+   "NOT DONE"
+  ]
+ ],
+ "ELECTRICAL MOUNTING ASSEMBLY": [
+  [
+   "FR 00401-AA",
+   "EMERGENCY SWITCH BRACKET",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR 00402-AA",
+   "UPR DASHBOARD BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00403-AA",
+   "SIDE DASHBOARD BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00404-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00405-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00406-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00407-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00408-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00409-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00410-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00411-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00412-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00413-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00414-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00415-AA",
+   "",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ]
+ ],
+ "PEDALS ASSEMBLY": [
+  [
+   "FR 00500-AA",
+   "Pedal Box",
+   "",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00500-AA",
+   "BRK Pedal",
+   "",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00500-AA",
+   "ACCELERATION PEDAL",
+   "",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00500-AA",
+   "Pedal Box Base",
+   "",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00501-AA",
+   "Pedal Box Plate",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00502-AA",
+   "Pedal Box Side Plate",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00503-AA",
+   "Pedal Box Side Bracket Plate",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00504-AA",
+   "Pedal Box Bone Plate",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00505-AA",
+   "Heels Plate",
+   "OEM",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00506-AA",
+   "Ball Lock Pin VN112",
+   "OEM",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00507-AA",
+   "ACC Pedal Bracket",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00508-AA",
+   "Bush ACC Pedal Bracket",
+   "AISI 1020",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00509-AA",
+   "Spring ACC",
+   "OEM",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00510-AA",
+   "ACC Carbon Box",
+   "OEM",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00511-AA",
+   "Pedal Plate BRK",
+   "OEM",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00512-AA",
+   "ACC Transmission",
+   "ABS",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00513-AA",
+   "ACC Pedal Position Bracket",
+   "ABS",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00514-AA",
+   "Sensor ACC Bracket",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00515-AA",
+   "Pedal Brake Bracket Left",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00516-AA",
+   "Pedal Brake Bracket Right",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00517-AA",
+   "Bod Bracket",
+   "7075-T6 (SN)",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00518-AA",
+   "Pedal Brake",
+   "7075-T6 (SN)",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00519-AA",
+   "Balance Bar Sphearical Bearing",
+   "OEM",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00520-AA",
+   "Master Pump Bracket",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00521-AA",
+   "BRK Reservoir Bracket",
+   "7075-T6 (SN)",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00522-AA",
+   "BRK Reservoir",
+   "OEM",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00523-AA",
+   "BRK Pedal Side Bush",
+   "AISI 1020",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00524-AA",
+   "Master Pump Middle Bush",
+   "AISI 1020",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00525-AA",
+   "Master Pump Side Bush",
+   "AISI 1020",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00526-AA",
+   "BRK Pedal Sensor Bush",
+   "AISI 1020",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00527-AA",
+   "Pedal Plate ACC",
+   "OEM",
+   "DONE",
+   "DONE"
+  ],
+  [
+   "FR 00528-AA",
+   "Bias Conecter",
+   "OEM",
+   "DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00529-AA",
+   "Bias Nob",
+   "OEM",
+   "DONE",
+   "NOT DONE"
+  ]
+ ],
+ "BODY ASSEMBLY": [
+  [
+   "FR 00701-AA",
+   "NOSE CONE",
+   "Carbon",
+   "",
+   ""
+  ],
+  [
+   "FR 00702-AA",
+   "NOSE CONE HOOD",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00703-AA",
+   "RIGHT SIDE BODY SHELL",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00704-AA",
+   "LEFT SIDE BODY SHELL",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00705-AA",
+   "LEFT UPPER TRACTIVE SHELL",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00706-AA",
+   "LEFT LOWER TRACTIVE SHELL",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00707-AA",
+   "RIGHT UPPER TRACTIVE SHELL",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00708-AA",
+   "RIGHT LOWER TRACTIVE SHELL",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00709-AA",
+   "LOWER BODY SHELL",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00706-AA",
+   "LEFT HOOP BRACING SHELL",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00706-AA",
+   "RIGHT HOOP BRACING SHELL",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00707-AA",
+   "LV CARBON PLATE",
+   "Carbon",
+   "NOT DONE",
+   "NOT DONE"
+  ]
+ ],
+ "FRAME JIG ASSEMBLY": [
+  [
+   "FR A0801-AA",
+   "Main Plate 1",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0802-AA",
+   "Main Plate 2",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0803-AA",
+   "Joint Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0804-AA",
+   "Front Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0805-AA",
+   "90 Degree Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0806-AA",
+   "FLF Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0807-AA",
+   "FUF Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0808-AA",
+   "DCP Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0809-AA",
+   "Front DCP Front Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0810-AA",
+   "Front DCP Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0811-AA",
+   "Main Hoop jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0812-AA",
+   "Rear Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0813-AA",
+   "RLF Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0814-AA",
+   "RLR Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0815-AA",
+   "RU Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0816-AA",
+   "Rear DCP Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0817-AA",
+   "Rear DCP Front Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0818-AA",
+   "Rear DCP Rear Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0819-AA",
+   "Steering Rack Jig",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR A0820-AA",
+   "Steering Rack Plate Jig",
+   "",
+   "",
+   ""
+  ]
+ ],
+ "DRIVETRAIN MOUNTING ASSEMBLY": [
+  [
+   "FR 00901-AA",
+   "DRIVETRAIN UPR BRACKET x 2",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR 00902-AA",
+   "DRIVETRAIN LWR BRACKET x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00903-AA",
+   "L FR ACCUMULATOR BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00904-AA",
+   "L MID FR ACCUMULATOR BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00905-AA",
+   "L MID RR ACCUMULATOR BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00906-AA",
+   "L RR UPR ACCUMULATOR BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00907-AA",
+   "R FR ACCUMULATOR BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00908-AA",
+   "R MID FR ACCUMULATOR BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00909-AA",
+   "R MID RR ACCUMULATOR BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00910-AA",
+   "R RR UPR ACCUMULATOR BRACKET",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00911-AA",
+   "RR LWR ACCUMULATOR BRACKET x 4",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 00912-AA",
+   "RR LWR ACCUMULATOR BRACKET PLATE x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ]
+ ],
+ "DRIVERS PROTECTION MOUNTING ASSEMBLY": [
+  [
+   "FR 01001-AA",
+   "FR LWR Nose cone bracket x 2",
+   "",
+   "",
+   ""
+  ],
+  [
+   "FR 01002-AA",
+   "RR LWR Nose cone bracket x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01003-AA",
+   "RR MID Nose cone bracket x 4",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01004-AA",
+   "RR UPR Nose cone bracket x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01005-AA",
+   "UPR Side shell bracket x 4",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01006-AA",
+   "FR MID Side shell bracket x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01007-AA",
+   "RR MID Side shell bracket x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01008-AA",
+   "FR LWR Side shell bracket x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01009-AA",
+   "RR LWR Side shell bracket x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01010-AA",
+   "LWR Seat bracket x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01011-AA",
+   "UPR Seat bracket x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01012-AA",
+   "Driver Harness bracket x 4",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01013-AA",
+   "Shoulder Harness Loop x 2",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ],
+  [
+   "FR 01014-AA",
+   "Head restraint mounting",
+   "",
+   "NOT DONE",
+   "NOT DONE"
+  ]
+ ],
+ "AERODYNAMICS PART ASSEMBLY": [],
+ "ANTI INTRUSION PLATE": []
 }
