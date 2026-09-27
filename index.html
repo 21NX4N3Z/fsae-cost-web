@@ -117,6 +117,9 @@ p{margin:0;text-wrap:pretty}
 
 .page{padding:var(--s5) var(--s5) var(--s6)}
 .page[hidden]{display:none}
+.field-warn{margin:var(--s2) 0 0;padding:var(--s2) var(--s3);border-radius:var(--radius-sm);
+  background:var(--warn-weak);border:1px solid var(--warn-border);color:var(--warn);
+  font-size:.8125rem;line-height:1.5}
 .auth-error{margin:var(--s5) var(--s6) 0;padding:var(--s4);border:1px solid var(--danger-border);
   border-left:4px solid var(--danger);border-radius:var(--radius);background:var(--danger-weak);
   display:grid;gap:var(--s2)}
@@ -904,6 +907,7 @@ p{margin:0;text-wrap:pretty}
             <div class="field w8">
               <label for="inpClientId">OAuth Client ID</label>
               <input id="inpClientId" placeholder="1234567890-abc.apps.googleusercontent.com">
+          <p class="field-warn" id="clientIdWarn" hidden></p>
               <span class="hint">จาก Google Cloud Console &rarr; OAuth client ID แบบ Web application &mdash; ค่านี้เป็นสาธารณะ ไม่ใช่ secret</span>
             </div>
             <div class="field w8">

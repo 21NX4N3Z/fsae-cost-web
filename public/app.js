@@ -1156,7 +1156,7 @@ function showPage(name) {
   if (name === "missing") renderMissing();
   if (name === "catalogs") renderCatalogPage();
   if (name === "dashboard") renderDashboard();
-  if (name === "settings") applySettingsToForm();
+  if (name === "settings") { applySettingsToForm(); warnIfClientMismatch(); }
 }
 
 // ------------------------------------------------------------
@@ -1754,6 +1754,22 @@ function applySettingsToForm() {
   updateAuthUi(!!state.token);
 }
 
+/** เตือนเมื่อ Client ID ในฟอร์มไม่ตรงกับตัวที่ฝังมากับแอป
+ * สาเหตุที่พบบ่อยที่สุดของ origin_mismatch คือเพิ่ม origin
+ * ไปที่ OAuth client ตัวอื่นในโปรเจกต์เดียวกัน */
+function warnIfClientMismatch() {
+  const warn = $("clientIdWarn");
+  if (!warn) return;
+  const v = ($("inpClientId") ? $("inpClientId").value : "").trim();
+  if (!v || v === GOOGLE_CLIENT_ID) {
+    warn.hidden = true;
+    return;
+  }
+  warn.hidden = false;
+  warn.textContent = "ค่านี้ไม่ตรงกับ Client ID ที่ฝังมากับเว็บ (" + GOOGLE_CLIENT_ID +
+    ") — ถ้าเพิ่ม Authorized JavaScript origins ไปที่ client อื่นจะขึ้น origin_mismatch";
+}
+
 function readSettingsFromForm() {
   state.settings.clientId = $("inpClientId").value.trim();
   state.settings.spreadsheetId = $("inpSheetId").value.trim();
@@ -1836,6 +1852,7 @@ function bindEvents() {
       return;
     }
     readSettingsFromForm();
+    warnIfClientMismatch();
     if (!state.settings.clientId) {
       toast("กรอก OAuth Client ID ใน Settings ก่อน");
       showPage("settings");
@@ -1847,6 +1864,7 @@ function bindEvents() {
   });
 
   $("btnSaveSettings").addEventListener("click", () => {
+    warnIfClientMismatch();
     if (readSettingsFromForm()) toast("บันทึกการตั้งค่าแล้ว"); else toast("บันทึกไม่สำเร็จ");
   });
   $("btnTestSheet").addEventListener("click", async () => {
