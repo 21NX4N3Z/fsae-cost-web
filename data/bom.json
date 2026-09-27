@@ -1,0 +1,191 @@
+{
+  "FRAME ASSEMBLY": [
+    [
+      "FR 00230-AA",
+      "FR BULKHEAD R",
+      "FRAME"
+    ],
+    [
+      "FR 00201-AA",
+      "FR BULKHEAD L",
+      "FRAME"
+    ],
+    [
+      "FR 00202-AA",
+      "FR BULKHEAD UPR",
+      "FRAME"
+    ],
+    [
+      "FR 00203-AA",
+      "FR BULKHEAD LWR",
+      "FRAME"
+    ],
+    [
+      "FR 00204-AA",
+      "FR BULKHEAD BRACING",
+      "FRAME"
+    ],
+    [
+      "FR 00205-AA",
+      "FR HOOP BRACING R",
+      "FRAME"
+    ],
+    [
+      "FR 00206-AA",
+      "FR HOOP BRACING L",
+      "FRAME"
+    ],
+    [
+      "FR 00207-AA",
+      "FR BULKHEAD SUPPORT UPR R",
+      "FRAME"
+    ],
+    [
+      "FR 00208-AA",
+      "FR BULKHEAD SUPPORT MID R",
+      "FRAME"
+    ],
+    [
+      "FR 00209-AA",
+      "FR BULKHEAD SUPPORT LWR R",
+      "FRAME"
+    ],
+    [
+      "FR A0100-AA",
+      "FRAME ASSEMBLY",
+      "FRAME"
+    ]
+  ],
+  "SUSPENSION MOUNTING ASSEMBLY": [
+    [
+      "FR 00301-AA",
+      "FR R UPR FR A-ARM BRACKET",
+      "FRAME"
+    ],
+    [
+      "FR 00302-AA",
+      "FR R UPR RR A-ARM BRACKET",
+      "FRAME"
+    ],
+    [
+      "FR 00303-AA",
+      "FR L UPR FR A-ARM BRACKET",
+      "FRAME"
+    ],
+    [
+      "FR 00304-AA",
+      "FR L UPR RR A-ARM BRACKET",
+      "FRAME"
+    ],
+    [
+      "FR 00305-AA",
+      "FR L UPR FR A-ARM BRACKET",
+      "FRAME"
+    ],
+    [
+      "FR 00306-AA",
+      "FR L UPR RR A-ARM BRACKET",
+      "FRAME"
+    ],
+    [
+      "FR 00307-AA",
+      "FR L LWR FR A-ARM BRACKET",
+      "FRAME"
+    ],
+    [
+      "FR 00308-AA",
+      "FR L LWR RR A-ARM BRACKET",
+      "FRAME"
+    ],
+    [
+      "FR A0200-AA",
+      "SUSPENSION MOUNTING ASSEMBLY",
+      "FRAME"
+    ]
+  ],
+  "ELECTRICAL MOUNTING ASSEMBLY": [
+    [
+      "FR 00401-AA",
+      "ELECTRICAL MOUNTING 1",
+      "FRAME"
+    ],
+    [
+      "FR 00402-AA",
+      "ELECTRICAL MOUNTING 2",
+      "FRAME"
+    ],
+    [
+      "FR A0300-AA",
+      "ELECTRICAL MOUNTING ASSEMBLY",
+      "FRAME"
+    ]
+  ],
+  "COOLING MOUNTING ASSEMBLY": [
+    [
+      "FR 00600-AA",
+      "COOLING MOUNTING",
+      "FRAME"
+    ]
+  ],
+  "BODY ASSEMBLY": [
+    [
+      "FR 00701-AA",
+      "NOSE CONE",
+      "BODY"
+    ],
+    [
+      "FR 00702-AA",
+      "RIGHT SIDE BODY SHELL",
+      "BODY"
+    ],
+    [
+      "FR 00703-AA",
+      "LEFT SIDE BODY SHELL",
+      "BODY"
+    ],
+    [
+      "FR 00704-AA",
+      "BODY PANEL",
+      "BODY"
+    ],
+    [
+      "FR 00705-AA",
+      "BODY PANEL 2",
+      "BODY"
+    ],
+    [
+      "FR A0700-AA",
+      "BODY ASSEMBLY",
+      "BODY"
+    ]
+  ],
+  "FRAME JIG ASSEMBLY": [
+    [
+      "FR A0800-AA",
+      "FRAME JIG ASSEMBLY",
+      "FRAME"
+    ]
+  ],
+  "DRIVETRAIN MOUNTING ASSEMBLY": [
+    [
+      "FR 01001-AA",
+      "DRIVETRAIN MOUNT 1",
+      "FRAME"
+    ],
+    [
+      "FR 01002-AA",
+      "DRIVETRAIN MOUNT 2",
+      "FRAME"
+    ],
+    [
+      "FR 01003-AA",
+      "DRIVETRAIN MOUNT 3",
+      "FRAME"
+    ],
+    [
+      "FR A1000-AA",
+      "DRIVETRAIN MOUNTING ASSEMBLY",
+      "FRAME"
+    ]
+  ]
+}

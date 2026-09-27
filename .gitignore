@@ -1,8 +1,25 @@
 node_modules
 dist
 .env
+.env.*
+!.env.example
 *.local
 .DS_Store
 
 .vercel
 *.tsbuildinfo
+
+# ไฟล์ต้นฉบับหนัก ๆ — ไม่ต้องขึ้น repo และไม่ต้องขึ้นเว็บ
+data/catalogs_raw.json
+data/*.xlsx
+data/*.pdf
+data/fsae-online-export/
+
+# backup files จากรอบแก้ไขก่อน ๆ
+_old/
+*.bak
+*.bak2
+*.bak3
+*.orig
+*.backup
+app_js_*.js

@@ -1,12 +1,884 @@
 <!doctype html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BP Cost — FSAE / BAJA Cost Entry</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FSAE Cost Manager — Frame &amp; Body</title>
+<style>
+/* ============================================================
+   FSAE Cost Manager — design tokens
+   โทน machine-blue ตามมาตรฐาน UI ของทีม: semantic tokens, ไม่มี emoji,
+   4-point grid, focus ring มองเห็นได้, 16px typography floor
+   ============================================================ */
+:root{
+  --bg:#eef2f5; --surface:#ffffff; --surface-sunken:#f5f8fa;
+  --text:#16232e; --text-muted:#5c6b78; --text-faint:#7d8b98;
+  --border:#d4dce3; --border-strong:#b8c4ce;
+
+  --nav-bg:#1b262f; --nav-bg-hover:#25323d; --nav-text:#c8d3db; --nav-text-active:#ffffff;
+  --accent:#1668a3; --accent-weak:#e8f1f8; --accent-border:#a9cbe0;
+  --signal:#c7f23a; --signal-ink:#1b2409;
+
+  --ok:#1d6f4c; --ok-weak:#eaf6f0; --ok-border:#bfe0cf;
+  --warn:#8a6100; --warn-weak:#fdf5e2; --warn-border:#ecdcab;
+  --danger:#9c3232; --danger-weak:#fdf1f1; --danger-border:#eec9c9;
+
+  --radius-sm:6px; --radius:9px; --radius-lg:13px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  --control-h:44px; --control-h-sm:38px;
+  --shadow:0 8px 24px rgba(27,38,47,.08);
+  --shadow-lg:0 22px 60px rgba(0,0,0,.22);
+  --focus:#1d7fc4;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{color-scheme:light}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Inter",Arial,Helvetica,sans-serif;
+  font-size:16px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3{margin:0;line-height:1.15;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+
+/* --- focus ring มองเห็นได้ทุกองค์ประกอบ (WCAG 2.2 AA) --- */
+:focus-visible{
+  outline:2px solid var(--focus);
+  outline-offset:2px;
+  border-radius:var(--radius-sm);
+}
+:focus:not(:focus-visible){outline:none}
+
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+
+.app{display:flex;min-height:100vh}
+
+/* ============================ Sidebar ============================ */
+.sidebar{
+  position:fixed;inset:0 auto 0 0;width:260px;
+  display:flex;flex-direction:column;
+  background:var(--nav-bg);color:var(--nav-text);
+}
+.brand{padding:var(--s5) var(--s4);border-bottom:1px solid #2f3d48}
+.brand .eyebrow{font-size:11px;letter-spacing:.14em;color:#8fa1ae;text-transform:uppercase}
+.brand h1{font-size:20px;margin:var(--s1) 0;letter-spacing:-.01em}
+.brand p{margin:0;font-size:14px;color:#a8b6c1}
+
+.nav{padding:var(--s3);display:grid;gap:var(--s1)}
+.nav-label{
+  padding:var(--s3) var(--s2) var(--s1);
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7d8d99;
+}
+.nav-btn{
+  display:flex;align-items:center;gap:var(--s3);
+  width:100%;min-height:var(--control-h);
+  padding:0 var(--s3);
+  border:0;border-radius:var(--radius-sm);
+  background:transparent;color:var(--nav-text);
+  text-align:left;font-weight:500;
+}
+.nav-btn:hover{background:var(--nav-bg-hover);color:#eaf1f5}
+.nav-btn[aria-current="page"]{
+  background:var(--nav-bg-hover);color:var(--nav-text-active);
+  box-shadow:inset 3px 0 var(--signal);
+}
+.nav-btn svg{flex:0 0 auto;width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.side-foot{
+  margin-top:auto;padding:var(--s4);
+  border-top:1px solid #2f3d48;font-size:13px;line-height:1.7;color:#9aabb6;
+}
+.side-foot b{color:#c2ced7;font-weight:600}
+
+/* ============================ Main ============================ */
+.main{margin-left:260px;flex:1;min-width:0}
+
+.topbar{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s4);
+  min-height:68px;padding:0 var(--s5);
+  background:var(--surface);border-bottom:1px solid var(--border);
+}
+.topbar .title{font-size:17px;font-weight:700}
+.topbar .meta{font-size:13px;color:var(--text-muted);margin-top:2px}
+.topbar-actions{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+
+.page{padding:var(--s5) var(--s5) var(--s6)}
+.page[hidden]{display:none}
+
+.page-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:var(--s4);flex-wrap:wrap;margin-bottom:var(--s5);
+}
+.eyebrow{
+  font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);
+}
+.page h2{font-size:26px;letter-spacing:-.02em;margin:var(--s1) 0 var(--s2)}
+.page-sub{font-size:15px;color:var(--text-muted);max-width:62ch}
+
+/* ============================ Buttons ============================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+  min-height:var(--control-h);padding:0 var(--s4);
+  border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--text);font-weight:600;
+}
+.btn:hover{background:var(--surface-sunken)}
+.btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:#12578a}
+.btn-signal{background:var(--signal);border-color:#a9d92a;color:var(--signal-ink)}
+.btn-signal:hover{background:#b9e42f}
+.btn-sm{min-height:var(--control-h-sm);padding:0 var(--s3);font-size:14px}
+
+/* ============================ Card ============================ */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow);
+}
+.card + .card{margin-top:var(--s4)}
+.card-head{
+  display:flex;justify-content:space-between;align-items:center;gap:var(--s3);
+  flex-wrap:wrap;
+  padding:var(--s3) var(--s4);border-bottom:1px solid var(--border);
+}
+.card-head h3{font-size:16px}
+.card-head .sub{font-size:13px;color:var(--text-muted)}
+.card-body{padding:var(--s4)}
+
+.step{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;margin-right:var(--s2);
+  border-radius:50%;background:var(--accent-weak);color:var(--accent);
+  font-size:12px;font-weight:800;
+}
+
+/* ============================ Form ============================ */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--s3)}
+.field{grid-column:span 4;display:flex;flex-direction:column;gap:6px}
+.field.w6{grid-column:span 6}
+.field.w8{grid-column:span 8}
+.field.full{grid-column:1/-1}
+.field > label{
+  font-size:12px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+.field input,.field select{
+  min-height:var(--control-h);width:100%;
+  padding:0 var(--s3);
+  border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+  background:var(--surface);
+}
+.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+.field input[readonly]{background:var(--surface-sunken);color:var(--text-muted)}
+.field .hint{font-size:13px;color:var(--text-faint)}
+
+/* ============================ Tags ============================ */
+.tag{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px var(--s2);border-radius:20px;
+  border:1px solid var(--border);background:var(--surface-sunken);
+  font-size:13px;font-weight:600;
+}
+.tag-frame{background:var(--accent-weak);color:#12578a;border-color:var(--accent-border)}
+.tag-body{background:var(--ok-weak);color:var(--ok);border-color:var(--ok-border)}
+.tag-wait{background:var(--warn-weak);color:var(--warn);border-color:var(--warn-border)}
+.tag-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px var(--s3);border-radius:20px;
+  font-size:13px;font-weight:600;
+  background:var(--ok-weak);color:var(--ok);border:1px solid var(--ok-border);
+}
+.pill-idle{background:var(--surface-sunken);color:var(--text-muted);border-color:var(--border)}
+
+/* ============================ Cost breakdown ============================ */
+.cost-section{
+  border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;background:var(--surface);
+}
+.cost-section + .cost-section{margin-top:var(--s3)}
+.cost-section .sec-head{
+  display:flex;justify-content:space-between;align-items:center;gap:var(--s3);
+  flex-wrap:wrap;padding:var(--s3) var(--s4);
+  background:var(--surface-sunken);border-bottom:1px solid var(--border);
+}
+.sec-head strong{font-size:12px;letter-spacing:.12em;font-weight:800}
+.sec-head span{font-size:13px;color:var(--text-muted)}
+.sec-count{
+  min-width:24px;padding:2px var(--s2);border-radius:20px;
+  background:var(--accent);color:#fff;font-size:12px;font-weight:700;text-align:center;
+}
+
+.cost-row{padding:var(--s3) var(--s4);border-top:1px solid var(--border)}
+.cost-row:first-of-type{border-top:0}
+.cr-top{display:flex;align-items:flex-start;gap:var(--s3)}
+.cr-name{flex:1;min-width:0}
+.cr-name .name{font-weight:600;overflow-wrap:anywhere}
+.cr-name .subtext{font-size:13px;color:var(--text-faint);margin-top:2px;overflow-wrap:anywhere}
+.cr-formula{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;color:var(--text-faint);margin-top:4px;overflow-wrap:anywhere;
+}
+.cr-total{
+  min-width:104px;text-align:right;
+  font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;
+}
+.cr-unit{font-size:12px;color:var(--text-faint);text-align:right;font-weight:500}
+
+.cr-ctrl{
+  display:flex;flex-wrap:wrap;align-items:flex-end;
+  gap:var(--s2) var(--s3);margin-top:var(--s3);
+}
+.ctl{display:flex;flex-direction:column;gap:4px;min-width:104px}
+.ctl label{
+  font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+.ctl input,.ctl select{
+  min-height:var(--control-h-sm);padding:0 var(--s2);
+  border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+  background:var(--surface);
+}
+.ctl input:focus,.ctl select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+.ctl-readonly{min-width:132px}
+.ctl-readonly .val{
+  display:flex;align-items:center;min-height:var(--control-h-sm);
+  padding:0 var(--s2);border-radius:var(--radius-sm);
+  background:var(--surface-sunken);border:1px dashed var(--border-strong);
+  font-size:14px;font-variant-numeric:tabular-nums;
+}
+.ctl-warn .val{color:var(--warn);border-color:var(--warn-border);background:var(--warn-weak)}
+
+.icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+  width:var(--control-h-sm);height:var(--control-h-sm);
+  border:1px solid var(--danger-border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--danger);
+}
+.icon-btn:hover{background:var(--danger-weak)}
+.icon-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+.plus-row{padding:var(--s2) var(--s4);border-top:1px solid var(--border);background:var(--surface-sunken)}
+.linkbtn{
+  display:inline-flex;align-items:center;gap:6px;
+  min-height:var(--control-h-sm);padding:0 var(--s2);
+  border:0;background:transparent;color:var(--accent);font-weight:700;
+}
+.linkbtn:hover{color:#0f4a76;text-decoration:underline}
+.linkbtn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round}
+
+.empty{
+  padding:var(--s4);font-size:14px;color:var(--text-faint);
+  border-top:1px solid var(--border);
+}
+
+/* ============================ Summary ============================ */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 348px;gap:var(--s4);align-items:start}
+.summary{position:sticky;top:84px}
+.summary-card{border-top:4px solid var(--signal)}
+.big{padding:var(--s4);border-bottom:1px solid var(--border)}
+.big .label{
+  font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+.big .val{
+  margin-top:var(--s1);font-size:34px;font-weight:800;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+}
+.sumrows{padding:var(--s3) var(--s4)}
+.sumrow{
+  display:flex;justify-content:space-between;align-items:center;gap:var(--s3);
+  padding:var(--s2) 0;border-bottom:1px solid var(--border);font-size:14px;
+}
+.sumrow:last-child{border-bottom:0}
+.sumrow span{color:var(--text-muted)}
+.sumrow b{font-variant-numeric:tabular-nums;font-weight:700}
+.sumrow.total{border-top:1px solid var(--border-strong);margin-top:var(--s1);padding-top:var(--s3)}
+.sumrow.total span,.sumrow.total b{font-size:16px;font-weight:800;color:var(--text)}
+.sumrow.grand{border-top:2px solid var(--text);margin-top:var(--s1);padding-top:var(--s3)}
+.sumrow.grand span,.sumrow.grand b{font-size:19px}
+
+.note{
+  margin-top:var(--s3);padding:var(--s3);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface-sunken);
+  font-size:13px;line-height:1.6;color:var(--text-muted);
+}
+.note b{color:var(--text)}
+
+/* ============================ Table ============================ */
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:var(--s3) var(--s2);border-bottom:1px solid var(--border);text-align:left}
+.table th{
+  background:var(--surface-sunken);
+  font-size:11px;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+.table td{font-size:14px;vertical-align:middle}
+.table tbody tr:hover{background:var(--surface-sunken)}
+.table .num{text-align:right;font-variant-numeric:tabular-nums}
+.table .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+
+.toolbar{
+  display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap;
+  margin-bottom:var(--s3);
+}
+.toolbar input[type="search"]{
+  flex:1 1 260px;min-height:var(--control-h);
+  padding:0 var(--s3);
+  border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+  background:var(--surface);
+}
+.toolbar input[type="search"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+.toolbar .count{font-size:14px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+
+.split{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--s4)}
+.list{display:grid;gap:var(--s1)}
+.list-btn{
+  min-height:var(--control-h);padding:0 var(--s3);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);text-align:left;font-weight:500;
+}
+.list-btn:hover{background:var(--surface-sunken)}
+.list-btn[aria-pressed="true"]{
+  background:var(--accent-weak);border-color:var(--accent-border);color:#12578a;font-weight:700;
+}
+
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--s3)}
+.catalog-item{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s3);
+  padding:var(--s4);border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--surface);
+}
+.catalog-item .ctitle{font-size:15px;font-weight:700}
+.catalog-item .csub{font-size:13px;color:var(--text-muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.catalog-item .btn{flex:0 0 auto}
+
+/* ============================ Modal ============================ */
+.modal{
+  position:fixed;inset:0;z-index:90;
+  display:none;align-items:center;justify-content:center;
+  padding:var(--s4);
+  background:rgba(16,26,33,.5);
+}
+.modal.is-open{display:flex}
+.modal-card{
+  display:flex;flex-direction:column;
+  width:min(860px,100%);max-height:86vh;
+  background:var(--surface);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg);overflow:hidden;
+}
+.modal-head{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s4);
+  padding:var(--s4);border-bottom:1px solid var(--border);
+}
+.modal-head .mtitle{font-size:18px;font-weight:700}
+.modal-head .msub{font-size:13px;color:var(--text-muted);margin-top:2px}
+.modal-body{display:flex;flex-direction:column;gap:var(--s3);padding:var(--s4);overflow:auto}
+.modal-filters{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center}
+.modal-filters input[type="search"]{
+  flex:1 1 240px;min-height:var(--control-h-sm);
+  padding:0 var(--s3);
+  border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+  background:var(--surface);
+}
+.modal-filters input[type="search"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+.chips{display:flex;flex-wrap:wrap;gap:var(--s2)}
+.chip{
+  min-height:var(--control-h-sm);padding:0 var(--s3);
+  border:1px solid var(--border-strong);border-radius:20px;
+  background:var(--surface);font-size:14px;font-weight:600;
+}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.cat-list{display:grid;gap:var(--s2)}
+.cat-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 150px 96px 104px;
+  gap:var(--s3);align-items:center;
+  padding:var(--s3);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);
+}
+.cat-row:hover{border-color:var(--border-strong);background:var(--surface-sunken)}
+.cat-row .t{font-weight:600;overflow-wrap:anywhere}
+.cat-row .s{font-size:13px;color:var(--text-faint);margin-top:2px;overflow-wrap:anywhere}
+.cat-row .k{font-size:13px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+.cat-row .k.right{text-align:right}
+.cat-row .k b{display:block;font-size:15px;color:var(--text);font-variant-numeric:tabular-nums}
+
+.vars{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.var-chip{
+  padding:2px var(--s2);border-radius:var(--radius-sm);
+  background:var(--accent-weak);color:#12578a;
+  font-size:12px;font-weight:700;
+}
+
+/* ============================ Toast ============================ */
+.toast{
+  position:fixed;right:var(--s5);bottom:var(--s5);z-index:100;
+  max-width:min(420px,calc(100vw - 48px));
+  padding:var(--s3) var(--s4);
+  border-radius:var(--radius-sm);
+  background:#1b262f;color:#f2f6f8;
+  box-shadow:var(--shadow-lg);
+  font-size:15px;
+  opacity:0;transform:translateY(8px);
+  pointer-events:none;transition:opacity .18s ease,transform .18s ease;
+}
+.toast.is-open{opacity:1;transform:translateY(0)}
+
+/* ============================ Conflict bar ============================ */
+.conflict-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s4);
+  flex-wrap:wrap;margin-bottom:var(--s4);padding:var(--s3) var(--s4);
+  border:1px solid var(--warn-border);border-left:4px solid var(--warn);
+  border-radius:var(--radius-sm);background:var(--warn-weak);
+}
+.conflict-bar[hidden]{display:none}
+.conflict-bar p{margin:0;font-size:14px;color:var(--warn);font-weight:600}
+
+/* ============================ Settings ============================ */
+.kv{display:grid;grid-template-columns:200px minmax(0,1fr);gap:var(--s2) var(--s4);font-size:14px}
+.kv dt{color:var(--text-muted)}
+.kv dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+
+@media (max-width:1180px){
+  .layout{grid-template-columns:1fr}
+  .summary{position:static}
+}
+@media (max-width:900px){
+  .sidebar{position:static;width:100%;height:auto}
+  .app{flex-direction:column}
+  .main{margin-left:0}
+  .side-foot{display:none}
+  .split{grid-template-columns:1fr}
+  .grid .field,.grid .field.w6,.grid .field.w8{grid-column:1/-1}
+  .cat-row{grid-template-columns:minmax(0,1fr) 104px}
+  .kv{grid-template-columns:1fr}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============================ Sidebar ============================ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="eyebrow">FSAE &middot; Cost Event</div>
+      <h1>Cost Manager</h1>
+      <p>Frame &amp; Body / Aero</p>
+    </div>
+
+    <nav class="nav" aria-label="Main">
+      <div class="nav-label">Workflow</div>
+      <button type="button" class="nav-btn" data-page="entry" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Cost Entry
+      </button>
+      <button type="button" class="nav-btn" data-page="bom">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        BOM &amp; Assemblies
+      </button>
+      <button type="button" class="nav-btn" data-page="catalogs">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"/></svg>
+        Cost Catalogs
+      </button>
+      <div class="nav-label">Team</div>
+      <button type="button" class="nav-btn" data-page="dashboard">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        Dashboard
+      </button>
+      <button type="button" class="nav-btn" data-page="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+        Settings
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <div><b>Vehicle</b> EV-02</div>
+      <div><b>System</b> FR &mdash; Frame &amp; Body</div>
+      <div><b>Catalog</b> FSAE Supplement V4</div>
+    </div>
+  </aside>
+
+  <!-- ============================ Main ============================ -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="title">FSAE Cost Manager</div>
+        <div class="meta" id="topMeta">Loading catalog&hellip;</div>
+      </div>
+      <div class="topbar-actions">
+        <span class="pill pill-idle" id="authBadge">ยังไม่ได้เชื่อม</span>
+        <span class="pill pill-idle" id="saveState">
+          <span class="tag-dot" aria-hidden="true"></span>
+          <span id="saveStateText">Local draft</span>
+        </span>
+        <button type="button" class="btn" id="btnAuth">Sign in with Google</button>
+        <button type="button" class="btn" id="btnDemo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Add sample rows
+        </button>
+      </div>
+    </header>
+
+    <!-- ---------- Cost Entry ---------- -->
+    <section class="page" id="page-entry" aria-labelledby="entryTitle">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Frame &amp; Body System (FR)</div>
+          <h2 id="entryTitle">Cost Entry</h2>
+          <p class="page-sub">เลือก Assembly &rarr; P/N &rarr; เพิ่มรายการจาก Cost Catalog ระบบคำนวณตามสูตรของ FSAE Supplement ให้อัตโนมัติ</p>
+        </div>
+        <div class="topbar-actions">
+          <button type="button" class="btn" id="btnPull">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            Pull from Sheet
+          </button>
+          <button type="button" class="btn" id="btnReset">Reset</button>
+          <button type="button" class="btn btn-primary" id="btnSubmit">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h11l5 5v11H4z"/><path d="M8 13h8M8 17h5"/></svg>
+            Submit Cost
+          </button>
+        </div>
+      </div>
+
+      <div class="conflict-bar" id="conflictBar" role="alert" hidden>
+        <p id="conflictText"></p>
+        <div class="topbar-actions">
+          <button type="button" class="btn btn-sm" id="btnTakeSheet">ใช้ข้อมูลจาก Sheet</button>
+          <button type="button" class="btn btn-sm btn-primary" id="btnKeepWeb">ใช้ข้อมูลเว็บ</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div>
+          <!-- Part information -->
+          <div class="card">
+            <div class="card-head">
+              <h3><span class="step" aria-hidden="true">1</span>Part Information</h3>
+              <span class="tag tag-frame" id="partCategory">FRAME</span>
+            </div>
+            <div class="card-body">
+              <div class="grid">
+                <div class="field w8">
+                  <label for="selAssembly">Assembly</label>
+                  <select id="selAssembly"></select>
+                </div>
+                <div class="field w6">
+                  <label for="selPart">Part Number</label>
+                  <select id="selPart"></select>
+                </div>
+                <div class="field w8">
+                  <label for="inpPartName">Part Name</label>
+                  <input id="inpPartName" readonly>
+                </div>
+                <div class="field">
+                  <label for="inpBaseNo">Base Number</label>
+                  <input id="inpBaseNo" readonly>
+                </div>
+                <div class="field">
+                  <label for="inpSuffix">Suffix</label>
+                  <input id="inpSuffix" value="AA">
+                </div>
+                <div class="field">
+                  <label for="selSystem">System</label>
+                  <select id="selSystem">
+                    <option>Body&amp;Frame</option>
+                    <option>Aero</option>
+                    <option>Suspension</option>
+                    <option>Electrical</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="selMakeBuy">Make / Buy</label>
+                  <select id="selMakeBuy">
+                    <option>Made</option>
+                    <option>Bought</option>
+                    <option>Both</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="inpQty">Quantity per car</label>
+                  <input id="inpQty" type="number" min="1" step="1" value="1" inputmode="numeric">
+                </div>
+                <div class="field w8">
+                  <label for="inpDetails">Design Note</label>
+                  <input id="inpDetails" value="Current design">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost breakdown -->
+          <div class="card">
+            <div class="card-head">
+              <h3><span class="step" aria-hidden="true">2</span>Cost Breakdown</h3>
+              <span class="sub">FSAE Cost Catalog driven &middot; Supplement V4</span>
+            </div>
+            <div class="card-body" id="costContainer"></div>
+          </div>
+
+          <!-- Submission -->
+          <div class="card">
+            <div class="card-head">
+              <h3><span class="step" aria-hidden="true">3</span>Submission</h3>
+              <span class="sub" id="submitTarget">ยังไม่ได้เชื่อม Google Sheets</span>
+            </div>
+            <div class="card-body">
+              <div class="grid">
+                <div class="field w6">
+                  <label for="inpEnteredBy">Entered By</label>
+                  <input id="inpEnteredBy" value="Team Member">
+                </div>
+                <div class="field">
+                  <label for="inpRevision">Revision</label>
+                  <input id="inpRevision" value="R01">
+                </div>
+              </div>
+              <div class="topbar-actions" style="justify-content:flex-end;margin-top:var(--s4)">
+                <button type="button" class="btn" id="btnSaveDraft">Save Draft</button>
+                <button type="button" class="btn btn-signal" id="btnSubmit2">Submit &amp; Sync</button>
+                <button type="button" class="btn btn-primary" id="btnPush">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                  Sync to Sheet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <aside class="summary" aria-label="Cost summary">
+          <div class="card summary-card">
+            <div class="big">
+              <div class="label">Extended Cost</div>
+              <div class="val" id="sumGrand">$0.00</div>
+            </div>
+            <div class="sumrows">
+              <div class="sumrow"><span>Materials</span><b id="sumMaterial">$0.00</b></div>
+              <div class="sumrow"><span>Processes (รวมตัวคูณรายแถว)</span><b id="sumProcess">$0.00</b></div>
+              <div class="sumrow"><span>Fasteners</span><b id="sumFastener">$0.00</b></div>
+              <div class="sumrow"><span>Tooling</span><b id="sumTooling">$0.00</b></div>
+              <div class="sumrow total"><span>Part Cost</span><b id="sumPart">$0.00</b></div>
+              <div class="sumrow"><span>&times; Quantity</span><b id="sumQty">1</b></div>
+              <div class="sumrow grand"><span>Extended</span><b id="sumExtended">$0.00</b></div>
+            </div>
+            <div class="card-body">
+              <div class="note" id="multNote">
+                <b>Process Multipliers</b> คูณกับยอด Processes แบบสะสม เช่น Machining ของ Aluminum = &times;1.00
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3>Catalog</h3></div>
+            <div class="card-body">
+              <dl class="kv">
+                <dt>Source</dt><dd id="metaSource">&mdash;</dd>
+                <dt>Version</dt><dd id="metaVersion">&mdash;</dd>
+                <dt>Imported</dt><dd id="metaImported">&mdash;</dd>
+              </dl>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ---------- BOM ---------- -->
+    <section class="page" id="page-bom" aria-labelledby="bomTitle" hidden>
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">BOM &middot; Assemblies</div>
+          <h2 id="bomTitle">Part Browser</h2>
+          <p class="page-sub">โครงสร้างจาก BP18 Part BOM &mdash; เลือก Part เพื่อส่งต่อเข้า Cost Entry</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="split">
+            <div>
+              <div class="nav-label" style="padding-left:0">Assemblies</div>
+              <div class="list" id="assemblyList"></div>
+            </div>
+            <div>
+              <h3 style="font-size:15px;margin-bottom:var(--s3)" id="bomAssemblyTitle">FRAME ASSEMBLY</h3>
+              <div class="toolbar">
+                <label class="sr-only" for="inpBomSearch">Search parts</label>
+                <input id="inpBomSearch" type="search" placeholder="Search P/N or part name&hellip;">
+                <button type="button" class="btn btn-sm" id="btnBomClear">Clear</button>
+                <span class="count" id="bomCount"></span>
+              </div>
+              <table class="table">
+                <caption class="sr-only">Parts in the selected assembly</caption>
+                <thead>
+                  <tr><th scope="col">P/N</th><th scope="col">Part Name</th><th scope="col">Category</th><th scope="col">Action</th></tr>
+                </thead>
+                <tbody id="bomRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- Catalogs ---------- -->
+    <section class="page" id="page-catalogs" aria-labelledby="catTitle" hidden>
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">FSAE Cost Catalogs</div>
+          <h2 id="catTitle">Cost Catalogs</h2>
+          <p class="page-sub">ห้าตารางต้นทุนมาตรฐานจาก FSAE Supplement V4 &mdash; เปิดดูรายการและสูตรคำนวณก่อนนำไปใช้ใน Cost Entry</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="catalog-grid" id="catalogGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- Dashboard ---------- -->
+    <section class="page" id="page-dashboard" aria-labelledby="dashTitle" hidden>
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Team</div>
+          <h2 id="dashTitle">Dashboard</h2>
+          <p class="page-sub">ภาพรวมจากข้อมูลที่บันทึกไว้ในเครื่องนี้ &mdash; จะรวมข้ามสมาชิกเมื่อเชื่อม Google Sheets</p>
+        </div>
+      </div>
+      <div class="layout">
+        <div>
+          <div class="card">
+            <div class="card-head"><h3>Saved cost entries</h3><span class="sub" id="dashCount"></span></div>
+            <div class="card-body">
+              <table class="table">
+                <caption class="sr-only">Cost entries saved on this device</caption>
+                <thead>
+                  <tr><th scope="col">Assembly</th><th scope="col">P/N</th><th scope="col">Part</th><th scope="col">Rev</th><th scope="col" class="num">Part Cost</th><th scope="col" class="num">Extended</th></tr>
+                </thead>
+                <tbody id="dashRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <aside class="summary">
+          <div class="card summary-card">
+            <div class="big">
+              <div class="label">Team total (extended)</div>
+              <div class="val" id="dashTotal">$0.00</div>
+            </div>
+            <div class="sumrows">
+              <div class="sumrow"><span>Parts costed</span><b id="dashParts">0</b></div>
+              <div class="sumrow"><span>Parts in BOM</span><b id="dashBomParts">0</b></div>
+              <div class="sumrow"><span>Coverage</span><b id="dashCoverage">0%</b></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ---------- Settings ---------- -->
+    <section class="page" id="page-settings" aria-labelledby="setTitle" hidden>
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Team</div>
+          <h2 id="setTitle">Settings</h2>
+          <p class="page-sub">ตั้งค่าการเชื่อมต่อ Google Sheets (ขั้นตอนถัดไป) และตรวจสอบแหล่งข้อมูลแคตตาล็อก</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Google Sheets integration</h3><span class="pill pill-idle" id="authBadge2">ยังไม่ได้เชื่อม</span></div>
+        <div class="card-body">
+          <div class="grid">
+            <div class="field w8">
+              <label for="inpClientId">OAuth Client ID</label>
+              <input id="inpClientId" placeholder="1234567890-abc.apps.googleusercontent.com">
+              <span class="hint">จาก Google Cloud Console &rarr; OAuth client ID แบบ Web application &mdash; ค่านี้เป็นสาธารณะ ไม่ใช่ secret</span>
+            </div>
+            <div class="field w8">
+              <label for="inpSheetId">Spreadsheet ID</label>
+              <input id="inpSheetId" placeholder="1AbC... (คัดลอกจาก URL ระหว่าง /d/ กับ /edit)">
+            </div>
+            <div class="field w8">
+              <label for="inpTemplateTab">เทมเพลตสำหรับสร้าง tab ใหม่</label>
+              <input id="inpTemplateTab" placeholder="AA 30001-1">
+              <span class="hint">ถ้า part ใหม่ยังไม่มี tab ระบบจะก๊อปจาก tab นี้</span>
+            </div>
+            <div class="field">
+              <label for="tabCount">Tabs found</label>
+              <input id="tabCount" readonly value="—">
+            </div>
+          </div>
+          <div class="topbar-actions" style="justify-content:flex-end;margin-top:var(--s4)">
+            <button type="button" class="btn" id="btnTestSheet">Test connection</button>
+            <button type="button" class="btn btn-primary" id="btnSaveSettings">Save Settings</button>
+          </div>
+          <div class="note">
+            ใช้ Google Identity Services แบบ token &mdash; <b>ไม่ต้องมี backend และไม่มี secret ในโค้ด</b> คนที่มีสิทธิ์แก้ไขไฟล์ Sheet นี้ก็ Sync ได้
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Catalog data</h3></div>
+        <div class="card-body">
+          <dl class="kv">
+            <dt>Source</dt><dd id="setSource">&mdash;</dd>
+            <dt>Version</dt><dd id="setVersion">&mdash;</dd>
+            <dt>Imported</dt><dd id="setImported">&mdash;</dd>
+            <dt>Build script</dt><dd class="mono">python scripts/build_catalog_v2.py</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============================ Catalog modal ============================ -->
+<div class="modal" id="catalogModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <div class="mtitle" id="modalTitle">Cost Catalog</div>
+        <div class="msub" id="modalSub">เลือกรายการเพื่อเพิ่มลง Part ปัจจุบัน</div>
+      </div>
+      <button type="button" class="btn" id="btnCloseModal">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-filters">
+        <label class="sr-only" for="inpCatalogSearch">Search catalog</label>
+        <input id="inpCatalogSearch" type="search" placeholder="Search catalog&hellip;">
+        <div class="chips" id="catalogChips"></div>
+      </div>
+      <div class="cat-list" id="catalogList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
 </html>
