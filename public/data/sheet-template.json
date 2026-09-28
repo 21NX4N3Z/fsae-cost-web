@@ -1,0 +1,171 @@
+{
+  "_comment": "แผนที่ช่องจริงใน Google Sheet A3000 ตรวจจาก API แล้ว — ห้าม hardcode แถว เพราะแต่ละ tab ไม่เหมือนกัน",
+  "_verified": "2026-09-27 via mcp__google_workspace__read_sheet_values + include_formulas",
+  "_samples_read": ["'A 3000'", "'AA 30001-1'", "'AA 30006-7'"],
+
+  "spreadsheet_id": "1_CjzOiP_Th0dKBX58fc6c6ksnQNjGZqPaXltOgw_Z2c",
+  "tab_naming": {
+    "pattern": "AA <P/N Base>[-<suffix>]",
+    "example": "AA 30001-1",
+    "note": "ชื่อ tab = P/N Base + Suffix ตรงกับค่าใน C5 และ C6 ของ tab นั้นเอง — ต้องตัดช่องว่างนำหน้าด้วย (มี tab ' AA 30001-22' เว้นวรรค)"
+  },
+
+  "LAYOUT_IS_DYNAMIC": {
+    "warning": "ตำแหน่งแถวต่างกันในแต่ละ tab — ต้องตรวจทุกครั้งก่อนเขียน ห้ามใช้เลขแถวที่บันทึกไว้ตรง ๆ",
+    "example_30001_1": {
+      "material": "header 11, data 12-13, subtotal 14",
+      "process": "header 16, data 17-18, subtotal 19",
+      "fastener": "header 21, data 22-23, subtotal 24",
+      "tooling": "header 26, data 27-28, subtotal 29"
+    },
+    "example_30006_7": {
+      "process": "header 16, data 17-20 (4 แถว!), subtotal 21",
+      "fastener": "header 23, data 24-25, subtotal 26 (ใช้ =U24 ไม่ใช่ SUM)",
+      "tooling": "header 28, data 29-30, subtotal 31"
+    },
+    "how_to_detect": {
+      "header_row": "สแกนหาค่า 'Item Order' ในคอลัมน์ A ที่แถวเดียวกับชื่อ section ในคอลัมน์ C",
+      "data_rows": "แถวถัดไปจนถึงก่อนแถวที่มี 'Sub Total'",
+      "subtotal_row": "แถวที่มีคำว่า 'Sub Total' ในคอลัมน์ของสูตรรวมของหมวดนั้น"
+    }
+  },
+
+  "COLUMNS_ARE_STABLE": {
+    "header_block": {
+      "C1": "University",
+      "C2": "System",
+      "C3": "Assembly",
+      "C4": "Part",
+      "C5": "P/N Base",
+      "C6": "Suffix",
+      "C7": "Details",
+      "N1": "Car #",
+      "N2": "Filelink1",
+      "N3": "Filelink2",
+      "N4": "Filelink3"
+    },
+    "totals_labels": {
+      "T1": "ป้าย 'Part Cost' — ค่าจริงอยู่ที่ V1",
+      "T2": "ป้าย 'Qty' — ค่าจริงอยู่ที่ V2",
+      "T4": "ป้าย 'Extended Cost' — ค่าจริงอยู่ที่ V4"
+    }
+  },
+
+  "totals_block": {
+    "_note": "V1 และ V4 เป็นสูตรของทีม — ห้ามเขียนทับเด็ดขาด",
+    "V2": { "label": "Qty", "writable": true, "type": "number" },
+    "V1": { "label": "Part Cost", "formula": "=AA{mat_subtotal}+S{proc_subtotal}+U{fast_subtotal}+S{tool_subtotal}", "writable": false },
+    "V4": { "label": "Extended Cost", "formula": "=V1*V2", "writable": false }
+  },
+
+  "sections": {
+    "_note": "มี 4 หมวดเท่านั้น — Process Multipliers ไม่ใช่หมวดแยก แต่เป็น 2 คอลัมน์ในหมวด PROCESS (O=ชื่อ, Q=ค่า)",
+
+    "material": {
+      "section": "MATERIAL",
+      "subtotal_col": "AA",
+      "columns": {
+        "A": "Item Order",
+        "C": "Material",
+        "G": "Use",
+        "I": "Unit Cost (ต้องคำนวณแล้วเขียนตัวเลข — ไม่มีสูตร)",
+        "K": "Size ( 1 )",
+        "M": "Unit ( 1 )",
+        "O": "Size ( 2 )",
+        "Q": "Unit ( 2 )",
+        "S": "Area Name",
+        "U": "Area",
+        "V": "Length",
+        "W": "Density",
+        "Y": "Quantity"
+      },
+      "row_formula": "AA{r} = I{r}*K{r}*Y{r}",
+      "_verified": "I12=2.25, K12=0.21, Y12=1 → $0.47"
+    },
+
+    "process": {
+      "section": "PROCESS",
+      "subtotal_col": "S",
+      "columns": {
+        "A": "Item Order",
+        "C": "Process",
+        "G": "Use",
+        "I": "Unit Cost (ต้องคำนวณแล้วเขียนตัวเลข)",
+        "K": "Unit",
+        "M": "Quantity",
+        "O": "Multiplier (ชื่อ เช่น 'Material - Steel')",
+        "Q": "Mult. Val. (ตัวคูณ เช่น 3)"
+      },
+      "row_formula": "S{r} = I{r}*M{r}*Q{r}",
+      "_verified": "S17=1.30*1*1=$1.30 ; S18=0.01*19.88*3=$0.60 → S19=$1.90"
+    },
+
+    "fastener": {
+      "section": "FASTENER",
+      "subtotal_col": "U",
+      "columns": {
+        "A": "Item Order",
+        "C": "Fastener",
+        "G": "Use",
+        "I": "Unit Cost (ต้องคำนวณแล้วเขียนตัวเลข)",
+        "K": "Size ( 1 )",
+        "M": "Unit ( 1 )",
+        "O": "Size ( 2 )",
+        "Q": "Unit ( 2 )",
+        "S": "Quantity"
+      },
+      "row_formula": "U{r} = I{r}*S{r}",
+      "_สำคัญ": "ตัวคูณคือ Quantity (คอลัมน์ S) ไม่ใช่ Size — Size1/Size2 ถูกยุบรวมใน Unit Cost ตอนคำนวณแล้ว",
+      "_verified": "'AA 30006-7' Rivet, Pop: I=0.03, S=10 → $0.30"
+    },
+
+    "tooling": {
+      "section": "TOOLING",
+      "subtotal_col": "S",
+      "columns": {
+        "A": "Item Order",
+        "C": "Tooling",
+        "G": "Use",
+        "I": "Unit Cost (ราคาเครื่องมือ)",
+        "K": "Unit",
+        "M": "Quantity",
+        "O": "PVF",
+        "Q": "Frac Incld."
+      },
+      "row_formula": "ไม่มีสูตร — ทีมพิมพ์ค่า S{r} เองเป็นตัวเลขคงที่",
+      "_verified": "'AA 30006-7' Lamination, Mold tool: 20,000 * 0.07 / 3000 = 0.4667 แต่ในชีตเขียน $0.45 (ปัดด้วยมือ)",
+      "_ข้อสังเกต": "ถ้าเว็บเขียนค่านี้ ควรเขียน (I*M/PVF) เพื่อให้ตรงกับสูตรส่วนอื่น แต่จะทำให้ตัวเลขเปลี่ยนจากเดิม — ต้องแจ้งทีมก่อน"
+    }
+  },
+
+  "assembly_tab": {
+    "_note": "tab ระดับ assembly (เช่น 'A 3000') มีตารางลูกภาษาเพิ่มที่ L7:AA10",
+    "columns": {
+      "L": "Item Order",
+      "O": "Part",
+      "S": "Part Cost",
+      "W": "Quantity",
+      "AA": "Subtotal"
+    },
+    "subtotal_cell": "AA10",
+    "example": "L8=1, O8='FRAME AND BODY ASSEMBLY', S8='$445.15', W8=1, AA8='$445.15'"
+  },
+
+  "write_rules": [
+    "เขียนเฉพาะช่องที่ writable=true ใน totals_block และคอลัมน์ใน sections",
+    "ห้ามเขียนทับ V1, V4 และคอลัมน์ Sub Total ของทุกหมวด (เป็นสูตรของทีม)",
+    "คอลัมน์ I (Unit Cost) ต้องเป็นตัวเลขที่เว็บคำนวณจากสูตรแคตตาล็อก ไม่ใช่สูตรของ Sheet",
+    "ต้องล้างค่าของแถวที่ไม่ได้ใช้ (เขียน '' ไม่ใช่ 0) ไม่งั้น Sub Total จะรวมของเก่า",
+    "ต้องตรวจ header/data/subtotal row ของแต่ละ tab ก่อนเขียนเสมอ",
+    "ถ้าแถวที่ต้องใช้เกินที่มี → insertRows แล้วปล่อยให้ Google ขยับสูตรเอง",
+    "ทีมพิมพ์ค่า Sub Total ของ tooling ด้วยมือ — ถ้าเว็บเขียนจะตัวเลขอาจต่างจากเดิม ให้ยืนยันกับทีมก่อนเปิดใช้"
+  ],
+
+  "anomalies": [
+    "tab 'AA 30006-7' กว้าง 31 คอลัมน์ ขณะที่ tab อื่น 28 — อาจมีคอลัมน์หลง",
+    "tab ' AA 30001-22', ' AA 30001-24', ' AA 30001-25', ' AA 30002-6', ' AA 30002-17' มีช่องว่างนำหน้า",
+    "มี tab 'สำเนาของ AA 30001' และ '0000' — น่าจะเป็นสำเนา ต้องไม่เขียนทับ",
+    "tab 'AA 30001-62(2)' ซ้ำกับ 'AA 30001-62' — เลข part ซ้ำกัน 2 tab",
+    "'List CostMiss Cost' เป็นลิสต์ค้างจากรถรุ่นก่อน (A01–A09) ไม่มีสูตร ไม่ต้องเขียน"
+  ]
+}

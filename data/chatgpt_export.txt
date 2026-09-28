@@ -1,0 +1,297 @@
+==================================================
+36. FSAE ONLINE CATALOG DETAIL CRAWLING
+==================================================
+
+IMPORTANT:
+
+The catalog listing page is NOT sufficient to build the final cost database.
+
+FSAE Online Cost Catalog pages contain a list/table view.
+Each catalog item has a [View] action that opens a detail page.
+
+Example:
+
+https://www.fsaeonline.com/cdsweb/cst/EditFasteners.aspx
+?CatalogVersion=2252
+&FastenerID=ec124acd-3066-4279-bd90-06cc975aedd6
+&Action=View
+
+The detail page may contain the actual:
+- parameters
+- units
+- usage
+- calculation basis
+- calculation inputs
+- detailed cost information
+- comments
+- tooling requirements
+- process multiplier requirements
+- other item-specific information
+
+Therefore:
+
+DO NOT build the normalized catalog using only the listing table.
+
+==================================================
+37. CATALOG IMPORT WORKFLOW
+==================================================
+
+For each catalog:
+
+1. Open catalog listing
+2. Extract all visible catalog rows
+3. Extract the item's unique ID
+4. Extract CatalogVersion
+5. Extract the View URL / detail URL
+6. Open/fetch each View page
+7. Parse the full detail data
+8. Store both summary data and detail data
+9. Normalize the fields
+10. Save to the official catalog database
+
+Workflow:
+
+Catalog List
+    ↓
+Catalog Item ID
+    ↓
+View URL
+    ↓
+Detail Page
+    ↓
+Detail Parser
+    ↓
+Normalized Catalog Record
+
+==================================================
+38. DO NOT ASSUME FIXED COST
+==================================================
+
+A catalog item's listing may show:
+
+[Needs Calculation]
+
+This does NOT mean the data is missing.
+
+It may mean the item requires parameters from the View page.
+
+The system must support:
+
+FIXED COST ITEMS
+and
+VARIABLE / CALCULATED COST ITEMS
+
+For variable items:
+
+1. Read required inputs from the detail page.
+2. Store the input definitions.
+3. Store valid units.
+4. Store calculation metadata/rules if available.
+5. Build a dynamic Cost Entry form.
+
+Example:
+
+Fastener
+[ Bolt, Aluminum ]
+
+Size 1
+[ ______ ] mm
+
+Size 2
+[ ______ ] mm
+
+Other required parameters
+[ ______ ]
+
+Then calculate the cost using the imported catalog logic.
+
+DO NOT invent formulas if the source does not expose them.
+
+==================================================
+39. PRESERVE RAW DETAIL DATA
+==================================================
+
+For every catalog item store:
+
+catalog_type
+catalog_version
+catalog_item_id
+name
+supplier
+category
+summary_data
+detail_data
+source_url
+detail_url
+imported_at
+updated_at
+
+Store raw detail information in addition to normalized fields.
+
+This is important because different catalog categories may have different fields.
+
+Do not force Materials, Processes, Fasteners and Tooling into one identical schema.
+
+Use a common metadata layer plus category-specific fields.
+
+==================================================
+40. CATALOG VERSIONING
+==================================================
+
+CatalogVersion is part of the source identity.
+
+Example:
+
+CatalogVersion = 2252
+FastenerID = ec124acd-3066-4279-bd90-06cc975aedd6
+
+Use both as part of the source reference.
+
+Do not assume CatalogVersion will always remain 2252.
+
+The system must support future catalog versions.
+
+Each Cost Entry must record:
+
+FSAE Catalog Version
+FSAE Catalog Item ID
+
+This allows historical Cost Entries to remain traceable.
+
+==================================================
+41. AUTHENTICATION / SESSION
+==================================================
+
+The implementation must first determine whether FSAE Online catalog detail pages require:
+
+- login
+- session cookies
+- CSRF token
+- authenticated browser context
+- other request state
+
+If direct HTTP/API access is not possible without authentication:
+
+DO NOT attempt to bypass authentication.
+
+Instead design one of these supported approaches:
+
+A. authenticated browser/session-based importer
+B. manual catalog export/import
+C. administrator-run sync
+D. user-provided official catalog files
+
+The production application must not store or expose a user's FSAE password.
+
+==================================================
+42. FSAE CATALOG ADMIN
+==================================================
+
+Provide:
+
+Admin
+→ FSAE Catalog Sync
+
+Catalog:
+- Materials
+- Processes
+- Process Multipliers
+- Fasteners
+- Tooling
+
+Actions:
+
+[ Sync ]
+
+and:
+
+[ View Raw Data ]
+
+[ View Detail ]
+
+[ Re-sync Item ]
+
+Show:
+
+Catalog Version
+Last Sync
+Records
+Failed Records
+Status
+
+==================================================
+43. WEB APP CATALOG UI
+==================================================
+
+The web app should visually mimic the existing FSAE catalog workflow:
+
+Catalog list
+    ↓
+[View]
+    ↓
+Catalog detail
+    ↓
+[Add to Cost Entry]
+
+Do not immediately insert an item when the user clicks the catalog row.
+
+Let the user inspect the detail first.
+
+Catalog detail page should show:
+- official item name
+- supplier
+- category
+- units
+- cost
+- calculation parameters
+- comments
+- FSAE source reference
+
+Then:
+
+[ Add to Cost Entry ]
+
+==================================================
+44. COST ENTRY INTEGRATION
+==================================================
+
+When the user clicks:
+
+[ Add to Cost Entry ]
+
+pass the complete catalog object into the Cost Entry page.
+
+Do not pass only the displayed price.
+
+Pass:
+- catalog item ID
+- catalog version
+- item name
+- source data
+- required parameters
+- calculation metadata
+- units
+- defaults
+
+The Cost Entry form should dynamically render the fields required by that catalog item.
+
+==================================================
+45. IMPORTANT SOURCE-OF-TRUTH RULE
+==================================================
+
+FSAE Online listing page
+    = catalog index
+
+FSAE Online View page
+    = catalog item detail
+
+FSAE Cost Supplement
+    = methodology / rules
+
+Team BOM
+    = parts and assemblies
+
+Team Cost Template
+    = final team cost structure
+
+The application must combine these sources rather than replacing one with another.
