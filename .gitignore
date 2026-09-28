@@ -27,3 +27,4 @@ app_js_*.js
 
 test-results/
 playwright-report/
+data/sheet-fixture.json

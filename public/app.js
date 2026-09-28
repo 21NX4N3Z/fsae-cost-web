@@ -17,7 +17,7 @@ const SECTIONS = [
     catalogLabel: "Materials",
     desc: "Standardized material inputs",
     addLabel: "Add from Materials Cost Catalog",
-    subtotalCol: "AA",
+    subtotalCol: "AA", labelCol: "Y",
     empty: "ยังไม่มีรายการ — เพิ่มจาก Materials Cost Catalog",
   },
   {
@@ -27,7 +27,7 @@ const SECTIONS = [
     catalogLabel: "Processes",
     desc: "Process base costs",
     addLabel: "Add from Processes Cost Catalog",
-    subtotalCol: "S",
+    subtotalCol: "S", labelCol: "Q",
     empty: "ยังไม่มีรายการ — เพิ่มจาก Processes Cost Catalog",
   },
   {
@@ -37,7 +37,7 @@ const SECTIONS = [
     catalogLabel: "Fasteners",
     desc: "Fastener installation / hardware catalog",
     addLabel: "Add from Fasteners Cost Catalog",
-    subtotalCol: "U",
+    subtotalCol: "U", labelCol: "S",
     empty: "ยังไม่มีรายการ — เพิ่มจาก Fasteners Cost Catalog",
   },
   {
@@ -47,7 +47,7 @@ const SECTIONS = [
     catalogLabel: "Tooling",
     desc: "Tooling table and PVF workflow",
     addLabel: "Add from Tooling Cost Catalog",
-    subtotalCol: "S",
+    subtotalCol: "S", labelCol: "Q",
     empty: "ยังไม่มีรายการ — เพิ่มจาก Tooling Cost Catalog",
   },
 ];
@@ -60,7 +60,7 @@ const STORAGE_KEYS = {
 };
 
 const GOOGLE_CLIENT_ID = "1017305531254-5s4hh89qq1vpmdbbhtgp8g5cdef704t7.apps.googleusercontent.com";
-const GOOGLE_SHEET_ID = "19KDrXJ2rvYIrhLfkxMCTujxNuj8Cg3YQ9-0CsB8MSvc";
+const GOOGLE_SHEET_ID = "1Dda2vfW1N5WGlVTuu-it389UEW82nG2ki7uk5P822o8";
 
 const state = {
   bom: {},
@@ -745,7 +745,7 @@ async function scanForMatching() {
   try {
     const tabs = await listTabs();
     // ข้าม tab ที่ไม่ใช่ของ part (ไม่ขึ้นต้นด้วย AA + เลข)
-    const partTabs = tabs.filter((t) => /^AA\s*\d/.test(t.title.trim()));
+    const partTabs = tabs.filter((t) => /^(FR\s*\d|AA\s*\d)/.test(t.title.trim()));
     const headers = [];
     for (let i = 0; i < partTabs.length; i += 1) {
       try {
@@ -1312,6 +1312,12 @@ async function signInWithRedirect() {
   const clientId = (state.settings.clientId || "").trim();
   if (!clientId) { toast("กรอก OAuth Client ID ใน Settings ก่อน"); return; }
 
+  // Google จะตอบ 400 origin_mismatch ถ้าโดเมนนี้ไม่ได้ลงทะเบียนไว้
+  // preview URL ของ Vercel เปลี่ยนทุกครั้งที่ deploy จึงใช้ไม่ได้
+  if (/--.*\.vercel\.app$/.test(location.hostname)) {
+    toast("อย่าเปิดผ่าน preview URL — ใช้โดเมนหลักแทน (ไม่มี --)");
+    return;
+  }
   const redirectUri = location.origin + "/";
   const verifier = base64url(crypto.getRandomValues(new Uint8Array(32)));
   const challenge = base64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
@@ -1458,7 +1464,7 @@ function colIndex(letter) {
 
 async function readTab(tabName) {
   const safe = tabName.replace(/'/g, "''");
-  const data = await sheetsGet("/values/" + encodeURIComponent("'" + safe + "'!A1:AE40"));
+  const data = await sheetsGet("/values/" + encodeURIComponent("'" + safe + "'!A1:AE140"));
   const rows = data.values || [];
 
   const layout = {};
@@ -1471,7 +1477,7 @@ async function readTab(tabName) {
     }
     if (headerRow < 0) { layout[section.key] = null; return; }
 
-    const subIdx = colIndex(section.subtotalCol);
+    const subIdx = colIndex(section.labelCol || section.subtotalCol);
     let subtotalRow = -1;
     for (let r = headerRow + 1; r < rows.length; r += 1) {
       const label = (rows[r][subIdx] || "").trim().toLowerCase();
@@ -1518,7 +1524,7 @@ function buildUpdates(entry, layout) {
   put(7, "C", entry.details || "");
   put(2, "V", entry.qty || 1);
 
-  const CLEAR = ["C", "G", "I", "K", "M", "O", "Q", "S", "U", "V", "W", "Y"];
+  const CLEAR = ["C", "F", "G", "I", "K", "M", "O", "Q", "S", "U", "V", "W", "Y"];
 
   SECTIONS.forEach((section) => {
     const L = layout[section.key];
@@ -1533,7 +1539,7 @@ function buildUpdates(entry, layout) {
       const u = unitCostOf(row);
       put(r, "A", r - L.dataStart + 1);
       put(r, "C", row.title || "");
-      put(r, "G", row.use || "");
+      put(r, "F", row.use || "");   // ชีตจริงใช้คอลัมน์ F (ไม่ใช่ G)
 
       if (section.key === "material") {
         put(r, "I", round4(u));
@@ -1574,11 +1580,21 @@ function buildUpdates(entry, layout) {
   return updates;
 }
 
-/** ชื่อ tab ที่ "ตั้งใจจะใช้" — เอารูปแบบ AA <base>-<suffix> */
+/** ชื่อ tab ที่ "ตั้งใจจะใช้" — รูปแบบของชีต BP18: FR <เลข 5 หลัก>-AA
+ *  ชีตเดิม (EV-02) ใช้ 'AA 30001-1' จึงเก็บรูปแบบเดิมไว้เป็นตัวสำรองใน tabCandidates */
 function tabNameFor(entry) {
-  const base = (entry.baseNo || entry.pn).trim();
-  const suffix = (entry.suffix || "AA").trim();
-  return ("AA " + base + (suffix ? "-" + suffix : "")).trim();
+  const digits = tabDigits(entry);
+  if (!digits) return (entry.pn || "").trim();
+  return "FR " + digits + "-" + ((entry.suffix || "AA").trim() || "AA");
+}
+
+/** เลขส่วนของ P/N ปรับเป็น 5 หลักเสมอ
+ *  BOM ใช้ 'FR 00201-AA' แต่ assembly ใช้ 'FR A0200-AA' (มีตัว A นำหน้า)
+ *  ชีตใช้ 'FR 00200-AA' ทั้งสองแบบ จึงต้องตัดตัวอักษรทิ้ง */
+function tabDigits(entry) {
+  const src = (entry.pn || entry.baseNo || "");
+  const m = String(src).match(/(\d{4,5})/);
+  return m ? m[1].padStart(5, "0") : null;
 }
 
 /**
@@ -1596,19 +1612,20 @@ function tabCandidates(entry) {
   const list = [];
   // 1) ผู้ใช้กำหนดเอง
   if (entry.targetTab) list.push(entry.targetTab);
-  // 2) รูปแบบมาตรฐานของชีต
-  //    P/N Base ในชีตคือ '30001-1' ซึ่งมี '-1' ติดมาแล้ว
-  //    ส่วน Suffix ('AA') คือ revision ไม่ได้อยู่ในชื่อ tab
+  // 2) รูปแบบมาตรฐานของชีต BP18: FR <เลข 5 หลัก>-AA
+  const d5 = tabDigits(entry);
+  if (d5) list.push("FR " + d5 + "-" + (suffix || "AA"));
+  // 3) รูปแบบของชีตเดิม (EV-02) เก็บไว้เป็นตัวสำรอง
   if (base) {
     const looksLikeBase = /^\d{4,5}-\d+$/.test(base);
     list.push("AA " + (looksLikeBase ? base : base + (suffix ? "-" + suffix : "")));
   }
-  // 3) เอาเลขใน P/N มาประกอบเอง
+  // 4) เอาเลขใน P/N มาประกอบเอง
   if (baseNums.length >= 2) list.push("AA " + baseNums[0] + "-" + baseNums[1]);
   else if (baseNums.length === 1) list.push("AA " + baseNums[0]);
   if (nums.length >= 2) list.push("AA " + nums[0] + "-" + nums[1]);
   else if (nums.length === 1) list.push("AA " + nums[0] + "-" + suffix);
-  // 4) ใช้ P/N ตรง ๆ
+  // 5) ใช้ P/N ตรง ๆ
   list.push(pn);
 
   return [...new Set(list.filter((x) => x && x.trim() && x.trim() !== "AA"))];
@@ -1712,6 +1729,75 @@ async function sheetIdOf(tabName) {
   return hit.sheetId;
 }
 
+/**
+ * แปลงรายการเขียนของเรา (range เป็นสตริง) เป็นรูปแบบที่ Sheets API v4 รับ
+ *
+ * รูปแบบเดิมที่ใช้มาไม่ถูกต้อง:
+ *   { updateCells: { range: "'FR 00200-AA'!C1", fields: "userEnteredValue", values: [[..]] } }
+ * v4 ต้องการ range เป็นออบเจกต์ GridRange และค่าอยู่ใน rows[].values[].userEnteredValue
+ * รูปแบบเดิมจะได้ 400 Unknown name 'range' จากเซิร์ฟเวอร์จริง
+ *
+ * ค่าที่เป็นตัวเลขต้องใช้ numberValue ส่วนข้อความใช้ stringValue
+ * (ถ้าใส่เป็น stringValue ตลอด Google จะตีความเป็นข้อความล้วน)
+ */
+function userEnteredValue(v) {
+  if (v === "" || v === null || v === undefined) return null;
+  if (typeof v === "number" && Number.isFinite(v)) return { numberValue: v };
+  if (typeof v === "boolean") return { boolValue: v };
+  // ข้อความที่ดูเป็นตัวเลขต้องคงเป็นข้อความ
+  // เช่น P/N Base '00201' ถ้าส่งเป็น number ศูนย์นำหน้าจะหายกลายเป็น 201
+  return { stringValue: String(v) };
+}
+
+async function toUpdateCells(updates) {
+  const byTab = new Map();
+  for (const u of updates) {
+    const m = /^'?([^'!]+)'?!([A-Z]+)(\d+)$/.exec(u.range);
+    if (!m) continue;
+    const [, tab, col, rowStr] = m;
+    if (!byTab.has(tab)) byTab.set(tab, []);
+    byTab.get(tab).push({
+      col: colIndex(col),
+      row: parseInt(rowStr, 10) - 1,
+      value: (u.values && u.values[0] && u.values[0][0]) ?? "",
+    });
+  }
+
+  const requests = [];
+  for (const [tab, cells] of byTab) {
+    const sheetId = await sheetIdOf(tab);
+    // กลุ่มตามแถวเพื่อให้เป็น request เดียวต่อช่วงต่อเนื่อง
+    cells.sort((a, b) => (a.row - b.row) || (a.col - b.col));
+    let group = [];
+    const flush = () => {
+      if (!group.length) return;
+      const start = group[0];
+      requests.push({
+        updateCells: {
+          range: {
+            sheetId,
+            startRowIndex: start.row,
+            endRowIndex: group[group.length - 1].row + 1,
+            startColumnIndex: start.col,
+            endColumnIndex: group[group.length - 1].col + 1,
+          },
+          rows: group.map((c) => ({ values: [{ userEnteredValue: userEnteredValue(c.value) }] })),
+          fields: "userEnteredValue",
+        },
+      });
+      group = [];
+    };
+    let prev = null;
+    for (const c of cells) {
+      if (prev && (c.row !== prev.row + 1 || c.col !== prev.col + 1)) flush();
+      group.push(c);
+      prev = c;
+    }
+    flush();
+  }
+  return requests;
+}
+
 async function syncPush() {
   if (!requireToken()) return;
   if (!state.settings.clientId) { toast("กรอก OAuth Client ID ใน Settings ก่อน"); return; }
@@ -1747,9 +1833,7 @@ async function syncPush() {
       toast("เพิ่มแถวให้อัตโนมัติ " + expanded + " หมวด");
     }
 
-    const requests = buildUpdates(entry, layout).map((u) => ({
-      updateCells: { range: u.range, fields: "userEnteredValue", values: u.values },
-    }));
+    const requests = await toUpdateCells(buildUpdates(entry, layout));
     await sheetsBatchUpdate({ requests });
     toast("เขียนกลับ tab '" + tab + "' แล้ว (" + requests.length + " ช่อง)");
   } catch (err) {
@@ -1774,7 +1858,6 @@ async function syncPull() {
       const L = layout[s.key];
       if (!L) return;
       for (let r = L.dataStart; r <= L.dataEnd; r += 1) {
-        if ((cell(rows, r, s.subtotalCol) || "").trim()) continue;
         if (!cell(rows, r, "C").trim()) continue;
         remoteRows += 1;
         remote += num(cell(rows, r, "I"), 0);
@@ -1833,7 +1916,7 @@ function loadFromSheet(rows, layout, entry) {
         const row = {
           kind: section.key,
           title: title,
-          use: cell(rows, r, "G").trim(),
+          use: cell(rows, r, "F").trim(),
           unit: cell(rows, r, "M").trim(),
           formula: hit ? hit.formula : "",
           c1: hit ? hit.c1 : 0,
